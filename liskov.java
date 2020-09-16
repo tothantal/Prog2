@@ -1,4 +1,4 @@
-public class  {
+public class Liskov {
 
     public static class Vehicle() {
         System.out.println("Vehicle");
@@ -29,6 +29,6 @@ public class  {
 
 public static class Main() {
     public static void main(String[] args) {
-        
+        Vehicle stuff = new Supercar();
     }
 }
