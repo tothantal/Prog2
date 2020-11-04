@@ -1,0 +1,62 @@
+package hu.unideb.prog2;
+
+public class IrisDataPrinter {
+	
+	Iris[] Irises;
+	
+	int AveragePetalWidth;
+	int AverageSepalWidth;
+	int AveragePetalLength;
+	int AverageSepalLength;
+	
+	public IrisDataPrinter(Iris[] Irises) {
+		this.Irises = Irises;
+	}
+
+	public int getAveragePetalWidth() {
+		
+		for(int i = 0; i < 150; i++) {
+			AveragePetalWidth += Irises[i].getPetalWidth();
+		}
+		
+		return AveragePetalWidth;
+	}
+	
+	public int getAverageSeptalWidth() {
+		
+		for(int i = 0; i < 150; i++) {
+			AveragePetalWidth += Irises[i].getSepalWidth();
+		}
+		
+		return AverageSeptalWidth;
+	}
+	
+	public int getAveragePetalHeight() {
+	
+	for(int i = 0; i < 150; i++) {
+			AveragePetalWidth += Irises[i].getPetalLength();
+		}
+	
+		return AveragePetalLength;
+	}
+	
+	public int getAveragePetalWidth() {
+	
+		for(int i = 0; i < 150; i++) {
+			AveragePetalLength += Irises[i].getSepalLength();
+		}
+	
+		return AverageSeptalHeight;
+	}
+	
+	
+	public Iris[] getIrises() {
+		return Irises;
+	}
+
+	public void setIrises(Iris[] irises) {
+		Irises = irises;
+	}
+	
+	
+}
