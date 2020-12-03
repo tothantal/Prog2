@@ -1,0 +1,167 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>1. hét - Helló, Arroway!</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> Yoda </title>
+		<para> Írjunk olyan Java programot, ami java.lang.NullPointerEx-el leáll, ha nem követjük a Yoda conditions-t! https://en.wikipedia.org/wiki/Yoda_conditions </para>
+
+		<para>
+A kifejezések szokásos megadásánál a változó tagok mindig a jobb oldalon vannak, azaz:
+		</para>
+
+		<programlisting>
+ if (value == 42) { /* .. */ }
+		 </programlisting>
+
+		<para>
+		A Yoda-condition, vagy Yoda-notation egy olyan programozási stílus, ahol a kifejezések két része a szoksásosnál fordítva van megadva, tehát a változó a jobb oldalon van.
+		</para>
+
+		<programlisting>
+if (42 == value) { /* .. */ }
+		 </programlisting>
+
+
+		<para>
+		A NullPointerException-t akkor dobja fel nekünk a program, ha nullpointerre hivatkozunk. Az alábbi program java.lang.NullPointerException-rel leáll. Ez azért következik be, mert a myString értékének egy nullpointert állítunk be. Így bár létrehoztunk egy változót, egy objektumot nem. Addig nem jutunk el, hogy az equals() metódus megpróbálja összehasonlítani a Stringeket, a NullPointerException már akkod dobódik, amikor a null értékű változón megpróbáljuk meghívni a metódust.
+		</para>
+
+		<programlisting>
+public class NullExceptionProgram {
+	public static void main(String []args) {
+		String myString = null;
+		if (!("foobar".equals(myString))){
+			System.out.println("It works");
+		}
+	}
+}
+		 </programlisting>
+
+
+
+	</section>
+
+	<section>
+    		<title> EPAM: Java Object metódusok </title>
+		<para> Mutasd be a Java Object metódusait és mutass rá mely metódusokat érdemes egy saját osztályunkban felüldefiniálni és miért. (Lásd még Object class forráskódja) </para>
+
+		<programlisting> public final Class getClass() </programlisting>
+		<para> A getClass() függvény visszatéríti az adott objektum futási osztályát. Például Integer osztály esetén az eredmény: </para>
+
+		<programlisting> class java.lang.Integer </programlisting>
+
+		<programlisting> public int hashCode() </programlisting>
+		<para> A hashCode() egy hashcode-ot térít vissza. Ezt a függvényt érdemes átírni, hiszen  így megszabhatjuk mi magunk, hogy hogyan számolódjon ki a hashcode. Ezt a metódust főleg az equals() metódussal együtt láttam használni. </para>
+
+
+		<programlisting> public boolean equals(Object obj) </programlisting>
+		<para> Az equals() metódus  megnézi hogy az adott objektumunk megegyezik-e a paraméterként megadott objektumunkkal.  Ez a metódus tranzitív, konzisztens, szimmetrikus, reflexív és minden x nem nulla referenciaértékre x.equals(null) visszatérési értéke false. Ezt is érdemes felülírni a hashCode()-dal együtt. </para>
+
+
+		<programlisting> protected Object clone() throws CloneNotSupportedException </programlisting>
+		<para> A clone() metódus az objektum teljes másolatát téríti vissza. A másolat precíz jelentése az adott objektumtól függ. Természetesen másolásra jó. Általánosan a következőek igazak: </para>
+
+		<programlisting> x.clone() != x;
+x.clone().getClass() == x.getClass();
+x.clone().equals(x);
+		 </programlisting>
+
+		<para> Ezek közül az utolsó nem feltétlenül igaz. </para>
+
+		<para> Ehhez kapcsolódik a Cloenable interface. Ha egy osztály implementálja ezt az interface-t, akkor azzal azt mondja a clone() metódusnak, hogy szabad field-for-field copy-t készítenie. 
+			Ha nincs implementálva, akkor CloneNotSupportedException kivétel dobódik ezen metódus használatakor. </para>
+
+		<para>
+			A field-for-field copy lényege, hogy ha egy objektumról készítek egy másolatot, akkor annak az értékei is másolódni fognak. Ez viszont egy sekély másolatot fog eredményezni.
+			A sekély ez esetben azt jelenti, hogy a másolt értékeken osztozik az eredeti és a másolt objektum is.
+			Ha mély másolatot szeretnénk kapni, akkor át kell írnunk a metódust. Ezt a new kulcsszó használatával tehetjük meg.
+		</para>
+
+
+		<programlisting> public String toString() </programlisting>
+		<para> A toString() metódust is érdemes átírni. Segítségével könnyebben olvasható formátumban jeleníthetünk meg egy objektumot. Szerintem ezt is érdemes átírni, hogy egy általunk könnyen olvasható formában jelenítse meg az objektumot. </para>
+
+		<programlisting> public final void notify() </programlisting>
+		<para> Felébreszt egy szálat, amely az objektum monitorára vár. Ha bármilyen szál vár erre az objektumra, az egyik kiválasztódik, és az felébred. Ez a választás véletlenszerű. Egyszerre egy objektum monitorát csak egy szál birtokolhatja. </para>
+
+		<programlisting> public final void notifyAll() </programlisting>
+		<para> Felébreszti az összes objektum monitorára várakozó objektumot. Ezen kívül ugyanúgy működik, mint a notify(). A jelenlegi szálnak birtokolnia kell az objektum monitorát.
+ </para>
+
+		<programlisting> public final void wait(long timeout)throws InterruptedException </programlisting>
+		<para> A jelenlegi szálat várakozásra készteti addig, amíg egy másik szál vagy a notify(), vagy a notifyAll() metódust meghívja, vagy egy bizonyos idő eltelik. Ezt az időt megadhatjuk a timeout segítségével. </para>
+
+		<programlisting> public final void wait(long timeout,int nanos)throws InterruptedException </programlisting>
+		<para> Ugyanúgy működik, mint a fenti wait(), csak megadhatjuk neki, mennyi legyen az az eltelt idő nanoszekundumokban, miután felébred a szál. Ezzel sokkal precízebben irányíthatjuk a folyamatot.  </para>
+
+		<programlisting> public final void wait()throws InterruptedException </programlisting>
+		<para> Ez a metódus a wait(0)-val egyezik meg. </para>
+
+		<programlisting> protected void finalize()throws Throwable </programlisting>
+		<para> Ezt a metódust az objektumon a szemétgyűjtő (Garbage Collector) hívja meg, amikor úgy állapítja meg, hogy nincs több hivatkozás az adott objektumra. Ezt az alosztály felül szokta írni, hogy megfelelően felszabadítsa a foglalt helyet, vagy egyéb takarítást végezzen. </para>
+
+		<para> Nem javallott erőforrások felszabadítására használni, mert nincs garancia arra, hogy mikor fut le, vagy , hogy egyáltalán lefut-e. </para>
+
+
+	</section>
+
+	<section>
+    		<title> EPAM: Eljárásorientál vs Objektumorientált </title>
+		<para> Írj egy 1 oldalas értekező esszé szöveget, amiben összehasonlítod az eljárásorientált és az objektumorientált paradigmát, igyekezve kiemelni az objektumorientált paradigma előnyeit! </para>
+
+		
+		<para> 
+			Az objektumorientált programozás osztályokat és objektumokat használ arra, hogy modellezze a világot. Egy objektumorientált paradigmával íródott programban az objektumok meghíváskor üzeneteket küldenek, melyek különböző szolgáltatásokat és információkat kérnek le. Az objektumok képesek üzenetek küldésére, foglalására és az információ adatformátumú továbbítására.
+		</para>	
+	
+		<para> 
+			Az objektum-orientált programozás előnye, hogy könnyebb a már meglévő kódot karbantartani és módosítani., mivel az újonnan készült objektumok képesek viselkedést örökölni a már meglévő objektumoktól. Ez leszűkíti a fejlesztési időt és könnyebbé teszi a program módosítását.
+		</para>
+	
+		<para> 
+			Ezzel szemben az eljárás-orientált programozás egy úgynevezett felülről lefelé stratégiát alkalmaz. Míg az objektumorientált programozás objektumokat és osztályokat használ, addig az eljárás-orientált paradigma esetén veszünk egy problémát, amit kisebb és kisebb problémákra bontunk, amelyekért egy-egy eljárás fog felelni.
+		</para>
+	
+		<para> 
+			Ezzel a módszerrel az a probléma, hogy ha valamit átszerkesztünk, akkor az összes olyan sor kódot is át kell szerkeszteni, amely hivatkozik az átszerkesztett kódrészletre.
+		</para>
+
+	
+		<para> 
+			Terminológia különbségek, hogy az eljárás-orientált paradigma eljárásainak (procedure) és függvényeinek (function) az objektum-orientált megfelelőit metódusoknak (method) nevezzük. Ugyanígy az eljárás-orientált paradigma adatszerkezeteire úgy szoktak hivatkozni, hogy rekordok (record). Ezeket OOP-ben objektumoknak (object) nevezzük.
+		</para>
+
+	
+		<para> 
+			A három lényeges különbség az eljárás- és objektum-orientált programozási paradigmák között, az öröklődés (inheritance), polimorfizmus és az beágyazás (encapsulation) jelenléte OOP-ben.
+		</para>
+
+	
+		<para> 
+			Az beágyazás adja magukat az osztályokat. A lényege, hogy az adatokat és a rájuk vonatkozó metódusokat tegyük egy helyre. OOP esetén ez a hely egy osztály.
+		</para>
+
+	
+		<para> 
+			Az öröklődés megkönnyíti a kódrészletek újrafelhasználását. Újonnan készített objektumok képesek a szülő objektumok tulajdonságait „örökölni”.  Egy alosztály képes a szülő osztálya egyik metódusát felülírni. Egyszerre több osztályból is történhet öröklődés.
+		</para>
+
+	
+		<para> 
+			A polimorfizmus azt a koncepciót írja le, hogy különböző típusú objektumok elérhetőek ugyanazon az interfészen keresztül. 
+		</para>
+
+	
+		<para> 
+			Az öröklődés, polimorfizmus és enkapszuláció szorosan kötődnek az objektumokhoz. Mivel az eljárás-orientált nyelvekben nincsenek objektumok, így ott ezekről a funkciókról sem beszélhetünk.
+		</para>
+
+
+
+	</section>
+
+</chapter>

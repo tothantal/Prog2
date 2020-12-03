@@ -1,0 +1,182 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>5. hét - Helló, Stroustrup!</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> EPAM: It's gone. Or is it? </title>
+		<para> Adott a következő osztály: </para>
+
+		<programlisting> 
+public class BugousStuffProducer { private final Writer writer;
+
+public BugousStuffProducer(String outputFileName) throws IOException {
+
+writer = new FileWriter(outputFileName);
+}
+
+public void writeStuff() throws IOException { writer.write("Stuff");
+}
+
+@Override
+
+public void finalize() throws IOException { writer.close();
+
+}
+}
+		 </programlisting>
+
+		<para>
+Mutass példát arra az esetre, amikor előfordulhat, hogy bár a program futása során meghívtuk a writeStuff() metódust, a fájl, amibe írtunk még is üres.Magyarázd meg, miért. Mutass alternatívát.
+		</para>
+
+		<para>
+A következő main függvényben előfordulhat, hogy a fájl üres marad:
+		</para>
+
+		<programlisting>
+public static void main(String[] args) throws Exception {
+        try (BugousStuffProducer stuffProducer = new BugousStuffProducer("someFile.txt")) {
+            stuffProducer.writeStuff();
+        }
+}
+		</programlisting>
+
+		<para>
+Ez azért fordul elő, mert nincs garancia arra, hogy lefut a finalize() függvény.
+		</para>
+
+		<para>
+A finalizer akkor hívódik meg, ha a JVM szerint egy instance-hoz szükséges a garbage collection.
+		</para>
+
+		<para>
+A finalizer feladata, hogy az objektumok által felhasznált erőforrásokat felszabadítsa, mielőtt azt kitörli a memóriából. 
+		</para>
+
+		<para> 
+Viszont a finalizer sok hibába is ütközhet. Például lehet, hogy a takarítás végezete előtt kifutunk a rendelkezésre álló memóriából, amely rendszerösszeomláshoz vezethet. Ezen kívül a ez a folyamat nagy teljesítmény igényű. A JVM-nek sok műveletet kell végrehajtania, amikor nem üres finalizer-t tartalmazó objektumokat próbál konstruálni illetve dekonstruálni. Továbbá, ha nem kezeljük megfelelően a kivételeket, a finalize művelet megszakad, és az objektum minden jelzés nélkül meghibásodik. 
+		</para>
+
+
+
+		<para> 
+Ahhoz hogy elkerüljük a finalize() hibáit, egyszerűen ne használjuk, és helyette implementáljuk a close() metódust. Ezt akkor tehetjük meg, ha osztály szinten implementáljuk az AutoCloseable tulajdonságot.
+		</para>
+
+
+		<programlisting>
+private static class BugousStuffProducer implements AutoCloseable {
+	...
+	@override
+	public void close() throws Exception {
+		writer.close();
+	}
+}
+		</programlisting>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Kind of equal </title>
+		<para> Adott az alábbi kódrészlet. </para>
+
+		<programlisting>
+// Given
+String first = "...";
+
+String second = "...";
+
+String third = "...";
+// When
+
+var firstMatchesSecondWithEquals = first.equals(second);
+
+var firstMatchesSecondWithEqualToOperator = first == second; var firstMatchesThirdWithEquals = first.equals(third);
+
+var firstMatchesThirdWithEqualToOperator = first == third;
+		 </programlisting>
+
+		<para> 
+Változtasd meg a String third = "..."; sort úgy, hogy a firstMatchesSecondWithEquals, firstMatchesSecondWithEqualToOperator, firstMatchesThirdWithEquals értéke true, a firstMatchesThirdWithEqualToOperator értéke pedig false legyen. Magyarázd meg, mi történik a háttérben.
+		</para>
+
+		<para> 
+A következő változtatás szükséges:
+		</para>
+
+		<programlisting>
+String third = new String("...")
+		 </programlisting>
+
+		<para> 
+Ekkor mindezek az assert állítások igazak lesznek:
+		</para>
+
+		<programlisting>
+//Then
+assertThat(firstMatchesSecondWithEquals, is(true));
+assertThat(firstMatchesSecondWithEqualToOperator, is(true));
+assertThat(firstMatchesThirdWithEquals, is(true));
+assertThat(firstMatchesThirdWithEqualToOperator, is(false));
+		 </programlisting>
+
+		<para> 
+Ez azért történik, mert a fenti first és second String ugyanarra a String objektumra referencia a String interning miatt, tehát egyenlők akkor is, ha az értéküket vizsgáljuk és akkor is, ha az objektumot.
+		</para>
+
+		<para> 
+A String.intern() Stringek sorozatára vonatkozóan biztosítja, hogy minden olyan String, amelynek ugyanaz az értéke, ugyanazon memórián fog tárolódni. Ezért lesz egyenlő a first és a second, akár az objektumot, akár az értéket nézzük.
+		</para>
+
+		<para> 
+Ezzel szemben, a third már egy új String objektumot kap meg értékként, tehát, már nem lesz ugyanaz az objektum, mint a másik kettő, ezért lesz false a negyedik.
+		</para>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Java GC </title>
+		<para> Mutasd be nagy vonalakban hogyan működik Java-ban a GC (Garbage Collector). Lehetséges az OutOfMemoryError kezelése, ha igen milyen esetekben? </para>
+
+		<para> 
+A Java-ban hét fajta GC létezik: Serial Garbage Collector, Parallel Garbage Collector, GMS Garbage Collector, G1 Garbage Collector, Epsilon Garbage Collector, Z Garbage Collector, és a Shenandoah Garbage Collector.
+		</para>
+
+		<para> 
+A SGC a legegyszerűbb. Egyszálas környezetre tervezték. Ez az implementáció az összes alkalmazásszálat lefagyasztja. A szemétgyűjtéshez csak egy szálat használ, ezért egy szálon futó applikációkhoz javasolt.
+		</para>
+
+		<para> 
+A PGC hasonlít a SGC-höz, de több szálon fut. Hasonlóan az előzőhöz az összes alkalmazásszálat lefagyasztja. Azon alkalmazásokhoz lett kitalálva, amelyek kibírják a megállítást.
+		</para>
+
+		<para> 
+A GMSGC (Concurrent Mark Sweep Garbage Collector) több garbage collector szálat használ a szemétgyűjtéshez. Átnézi a heap memory-t, megjelöli azon példányokat, amelyeket be kell gyűjteni, majd begyűjti azokat. Azokhoz az alkalmazásokhoz tervezték, amelyek megengedhetik maguknak a futás közbeni GC-ral való processzor erőforrások megosztását.
+		</para>
+
+		<para> 
+A G1 GC felosztja a heap memóriát részekre, és párhuzamosan gyűjti be róluk a szemetet.
+		</para>
+
+		<para> 
+Az Epsilon egy passzív GC, memóriát allokál az alkalmazásnak, de nem gyűjti be a nem használt objektumokat. Az Epsilon megengedi az alkalmazásnak a memóriából való kifogyást, és összeomlást.
+		</para>
+
+		<para> 
+A ZGC minden erőforrásigényes operációt a program futásával egy időben végez el. Az alkalmazás szálait 10 ms-nál több időre nem állítja meg. Alkalmas a nagy heap-et használó alkalmazásokhoz. Az Oracle dokumentáció szerint több terabájtos heap-et is képes kezelni.
+		</para>
+
+		<para> 
+A Shenandoah egy nagyon kevés időre állítja meg csak a program szálait. A szemétgyűjtés nagy részét a program futásával egy időben végzi el.
+		</para>
+
+		<para> 
+Az OutOfMemoryError kezelése lehetséges, mégpedig akkor, ha egy allokációhoz nincs elegendő memória. 
+		</para>
+
+	</section>
+
+</chapter>

@@ -1,0 +1,281 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>7. hét - Helló, !</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> EPAM: XML feldolgozás </title>
+		<para> Adott egy koordinátákat és államokat tartalmazó XML (kb 210ezer sor), ezt az XML-t feldolgozva szeretnék létrehozni egy SVG fájlt, melyben minden város megjelenik egy pont formájában az adott koordináták alapján (tetszőleges színnel) </para>
+
+
+		<para> 
+A main függvényben példányosítunk egy objektumot (SaxXmlReader), amely segíteni fog nekünk az xml file beolvasásában. Ezt egy FileInputStream-mel oldjuk meg. Ez az objektum byte-okat olvas be egy file-ból. A FileInputStream-et arra készítették, hogy úgynevezett raw byte-okat olvasson be, mint például valamilyen képadat.
+		 </para>
+
+		<programlisting> 
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+public class XmlMapPlotter {
+    public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException {
+        XmlReader reader = new SaxXmlReader(new FileInputStream("input.xml"));
+        List&lt;City&gt; cities = reader.getCities();
+        MapImage image = new SvgMapImage(800, 600);
+        cities.forEach(city -&gt; city.plot(image));
+        image.save(new FileWriter("map.svg"));
+    }
+}
+		 </programlisting>
+
+		<para> 
+Az SVG file készítését pedig egy külső GenericDOMImplementation könyvtár segítségével oldjuk meg az SvgMapImage file-ban
+		 </para>
+
+		<programlisting> 
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+
+import java.awt.*;
+import java.io.Writer;
+
+public class SvgMapImage implements MapImage {
+
+    SVGGraphics2D svgGenerator;
+
+    public SvgMapImage(int canvasWidth, int canvasHeight) {
+        // Get a DOMImplementation.
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+        // Create an instance of the SVG Generator.
+        svgGenerator = new SVGGraphics2D(document);
+        svgGenerator.setSVGCanvasSize(new Dimension(canvasWidth, canvasHeight));
+    }
+
+    @Override
+    public void addPoint(double x, double y) {
+        svgGenerator.fillOval((int) x, (int) y, 2, 2);
+    }
+
+    @Override
+    public void save(Writer targetStream) {
+        try {
+            svgGenerator.stream(targetStream);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to write image", e);
+        }
+    }
+}
+		 </programlisting>
+
+		<para> 
+Ennek az osztálynak a két függvénye rak egy pontot egy bizonyos koordinátára (addPoint), illetve elmenti a képet (save).
+		 </para>
+
+		<para> 
+A file beolvasása pedig a SaxXmlReader osztályon keresztül megy végbe.
+		 </para>
+
+		<programlisting> 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
+
+public class SaxXmlReader extends DefaultHandler implements XmlReader {
+
+    private double currentXCoordinate;
+    private double currentYCoordinate;
+    private String currentState;
+
+    private Consumer&lt;String&gt; actionOnCharacters = c -> {
+    };
+
+    private List&lt;City&gt; result = new LinkedList&lt;&gt;();
+
+    public SaxXmlReader(InputStream input) throws ParserConfigurationException, SAXException, IOException {
+        SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+        parser.parse(input, this);
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if (qName.equalsIgnoreCase("coordinateX")) {
+            actionOnCharacters = c -&gt; currentXCoordinate = Double.parseDouble(c);
+        }
+        if (qName.equalsIgnoreCase("coordinateY")) {
+            actionOnCharacters = c -&gt; currentYCoordinate = Double.parseDouble(c);
+        }
+        if (qName.equalsIgnoreCase("state")) {
+            actionOnCharacters = c -&gt; currentState = c;
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (qName.equalsIgnoreCase("city")) {
+            result.add(new City(currentXCoordinate, currentYCoordinate, currentState));
+        }
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        actionOnCharacters.accept(new String(ch, start, length));
+        actionOnCharacters = c -&gt; {
+        };
+    }
+
+    @Override
+    public List&lt;City&gt; getCities() {
+        return result;
+    }
+}
+		 </programlisting>
+
+
+	</section>
+
+    	<section>
+    		<title> EPAM: ASCII Art </title>
+		<para> ASCII Art in Java! Implementálj egy Java parancssori programot, ami beolvas egy képet és kirajzolja azt a parancssorba és / vagy egy szöveges fájlba is ASCII karakterekkel. </para>
+
+
+
+		<para> 
+A Main.java tartalma:
+		 </para>
+
+		<programlisting> 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.imageio.ImageIO;
+
+import com.epam.training.asciiprinter.AsciiPrinter;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException {
+		String imageName = args[0];
+		String textFileName = args.length != 2 ? null : args[1];
+		OutputStream outputStream = textFileName == null ? System.out : new FileOutputStream(textFileName);
+		BufferedImage image = ImageIO.read(new File(imageName));
+
+		new AsciiPrinter(outputStream, image).print();
+	}
+
+}
+		 </programlisting>
+
+		<para> 
+A main függvény megkapja parancssori argumentumként a kép nevét, majd az AsciiPrinter objektumon keresztül a print() metódussal elkészítjük és kiíratjuk az ASCII Artot.
+		 </para>
+
+		<para> 
+Maga az AsciiPrinter:
+		 </para>
+
+		<programlisting> 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
+
+public class AsciiPrinter {
+
+	private static final char[] ASCII_PIXELS = { '$', '#', '*', ':', '.', ' ' };
+	private static final byte[] NEW_LINE = "\n".getBytes();
+
+	private OutputStream outputStream;
+	private BufferedImage image;
+
+	public AsciiPrinter(OutputStream outputStream, BufferedImage image) {
+		this.outputStream = outputStream;
+		this.image = image;
+	}
+
+	public void print() throws IOException {
+		for (int i = 0; i &lt; image.getHeight(); i++) {
+			for (int j = 0; j &lt; image.getWidth(); j++) {
+				outputStream.write(getAsciiChar(image.getRGB(j, i)));
+			}
+			outputStream.write(NEW_LINE);
+		}
+	}
+
+	public static char getAsciiChar(int pixel) {
+		return getAsciiCharFromGrayScale(getGreyScale(pixel));
+	}
+
+	public static int getGreyScale(int argb) {
+		int red = (argb >> 16) &amp; 0xff;
+		int green = (argb >> 8) &amp; 0xff;
+		int blue = (argb) &amp; 0xff;
+		return (red + green + blue) / 3;
+	}
+
+	public static char getAsciiCharFromGrayScale(int greyScale) {
+		return ASCII_PIXELS[greyScale / 51];
+	}
+
+}
+		 </programlisting>
+
+		<para> 
+A print metódus végigmegy a kép minden pontján, majd minden pont helyén kiír egy ASCII karaktert. Ezt az outputStream-en keresztül történik meg, amely egy ByteStream.
+		 </para>
+
+		<programlisting> 
+public void print() throws IOException {
+		for (int i = 0; i &lt; image.getHeight(); i++) {
+			for (int j = 0; j &lt; image.getWidth(); j++) {
+				outputStream.write(getAsciiChar(image.getRGB(j, i)));
+			}
+			outputStream.write(NEW_LINE);
+		}
+	}
+		 </programlisting>
+
+		<para> 
+Az OutputStream write() metódusa kiír egy byte-ot a megnevezett stream-re
+		 </para>
+
+		<para> 
+Az OutputStream minden output stream superosztálya. Az egyik alosztálya a FileOutputStream, amelyet adatok file-okba való írásához használunk. Ebben a programban is van erre példa, amikor a egy text file-ba íratjuk az ASCII karakterekből álló képünket a Main file-ban.
+		 </para>
+
+		<para> 
+Az AsciiPrinter többi része azt allápítja meg, hogy milyen ASCII karakterrel helyettesítse az adott képpontot.
+		 </para>
+
+	</section>
+
+    	<section>
+    		<title> feladat címe </title>
+		<para> feladat leírása </para>
+
+		<programlisting> FELADAT KÓD </programlisting>
+		<para> feladat megoldása </para>
+
+	</section>
+
+</chapter>

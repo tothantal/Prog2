@@ -1,0 +1,236 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>9. hét - Helló, Calvin!</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> feladat címe </title>
+		<para> feladat leírása </para>
+
+		<programlisting> FELADAT KÓD </programlisting>
+		<para> feladat megoldása </para>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Back To The Future </title>
+		<para> Adott az alábbi kódrészlet: </para>
+
+		<programlisting> 
+public class FutureChainingExercise {
+
+private static ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+public static void main(String[] args) {
+CompletableFuture&lt;String&gt; longTask
+
+    • CompletableFuture.supplyAsync(() -> { sleep(1000);
+
+return "Hello";
+}, executorService);
+
+CompletableFuture&lt;String&gt; shortTask
+
+    • CompletableFuture.supplyAsync(() -> { sleep(500);
+
+return "Hi";
+}, executorService);
+
+CompletableFuture&lt;String&gt; mediumTask
+
+    • CompletableFuture.supplyAsync(() -> { sleep(750);
+
+return "Hey";
+}, executorService);
+
+CompletableFuture&lt;String&gt; result
+
+    • longTask.applyToEitherAsync(shortTask, String::toUpperCase, executorService); result = result.thenApply(s -> s + " World");
+
+CompletableFuture&lt;Void&gt; extraLongTask
+
+    • CompletableFuture.supplyAsync(() -> { sleep(1500);
+
+return null;
+}, executorService);
+
+result = result.thenCombineAsync(mediumTask, (s1, s2) -> s2 + ", " + s1, executorService);
+
+System.out.println(result.getNow("Bye"));
+sleep(1500);
+
+System.out.println(result.getNow("Bye"));
+
+result.runAfterBothAsync(extraLongTask, () -
+
+> System.out.println("After both!"), executorService); result.whenCompleteAsync((s, throwable) -> System.out.println("Complete: " +
+s), executorService);
+
+executorService.shutdown();
+}
+
+/**
+
+*
+
+    • @param sleeptime sleep time in milliseconds */
+private static void sleep(int sleeptime) {...}
+
+}
+		 </programlisting>
+
+		<para> 
+Mi lesz kiíratva a standard kimenetre és miért?
+		 </para>
+
+	</section>
+
+
+	<para>
+Mivelm nincs a példakódban implementálva a sleep függvény, úgy döntöttem, hogy a java.util.concurrent.TimeUnit segítségével fogom megoldani a feladatot, amelynek alkalmazása a következőképpen történik:
+	</para>
+
+	<programlisting>
+TimeUnit.TIMEUNIT.sleep(unit)
+	</programlisting>
+
+	<para>
+Ez a függvény unit-nyi TIMEUNIT-ig megállítja egy szál működését, ahol a TIMEUNIT valamilyen időegység. Ebben a programban ez az időegység MILLISECONDS lesz.
+	</para>
+
+	<para>
+Ezzel a módosítással a következőképpen néz ki a teljes kód:
+	</para>
+
+	<programlisting>
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class FutureChainingExercise {
+	private static ExecutorService executorService = Executors.newFixedThreadPool(2);
+	
+	public static void main(String[] args) {
+		CompletableFuture&lt;String&gt; longTask
+			= CompletableFuture.supplyAsync(() -> {
+				try {
+					TimeUnit.MILLISECONDS.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return "Hello";
+			}, executorService);
+		
+		CompletableFuture&lt;String&gt; shortTask
+			= CompletableFuture.supplyAsync(() -> {
+				try {
+					TimeUnit.MILLISECONDS.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return "Hi";
+			}, executorService);
+		
+		CompletableFuture&lt;String&gt; mediumTask
+			= CompletableFuture.supplyAsync(() -> {
+				try {
+					TimeUnit.MILLISECONDS.sleep(750);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return "Hey";
+			}, executorService);
+		
+		CompletableFuture&lt;String&gt; result
+			= longTask.applyToEitherAsync(shortTask, String::toUpperCase, executorService); result = result.thenApply(s -> s + " World");
+	
+		CompletableFuture&lt;Void&gt; extraLongTask
+			= CompletableFuture.supplyAsync(() -> {
+				try {
+					TimeUnit.MILLISECONDS.sleep(1500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}, executorService);
+			
+			result = result.thenCombineAsync(mediumTask, (s1, s2) -> s2 + ", " + s1, executorService);
+			
+			System.out.println(result.getNow("Bye"));
+			try {
+				TimeUnit.MILLISECONDS.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println(result.getNow("Bye"));
+			
+			result.runAfterBothAsync(extraLongTask, () -> System.out.println("After both!"), executorService); 
+			result.whenCompleteAsync((s, throwable) -> System.out.println("Complete: " +s), executorService);
+			
+			executorService.shutdown();
+	}
+}
+	</programlisting>
+
+	<para>
+Az eredmény pedig a következő lesz:
+	</para>
+
+	<programlisting>
+Bye
+Hey, HELLO World
+Complete: Hey, HELLO World
+	</programlisting>
+
+	<para>
+Ezen belül  a Bye kiírása azonnali, a másik két sorhoz várnunk kell egy kicsit. Azért a Bye íratódik ki először, mert azt nem váratjuk meg a sleep függvényünkkel. A getNow(valueIfAbsent) metódus visszatéríti az eredményt, de ha ez nem lehetséges, akkor a valueIfAbsent-et téríti vissza. 
+	</para>
+
+	<programlisting>
+System.out.println(result.getNow("Bye"));
+	</programlisting>
+
+	<para>
+A második sor pedig a következőképpen áll össze: Először elvégződik a shortTask, illetve az azt követő thenApply metódus, ezzel a result értéke "HI WORLD" lesz. Majd a mediumTask elvégzése után az eredmény módosul "Hey, HELLO World"-é a thenCombineAsync() metódussal, és ezt fogja kiíratni nekünk a fenti println, amikor elérhető lesz az eredmény.
+	</para>
+
+	<programlisting>
+CompletableFuture&lt;String&gt; result = 
+		longTask.applyToEitherAsync(shortTask, String::toUpperCase, executorService); 
+result = result.thenApply(s -> s + " World");
+
+result = result.thenCombineAsync(mediumTask, (s1, s2) -> s2 + ", " + s1, executorService);
+	</programlisting>
+
+	<para>
+Az output utolsó soráért pedig a következő sor felel:
+	</para>
+	
+	<programlisting>
+result.whenCompleteAsync((s, throwable) -> 
+	System.out.println("Complete: " +s), executorService);
+	</programlisting>
+
+    	<section>
+    		<title> EPAM: AOP </title>
+		<para> Készíts két példa projektet, melyben egyes metódusok futási idejét méred majd kiíratod úgy, hogy a metó-dus futási idejének méréséhez AOP-t használsz. Az első projektben csak az AspectJ könyvtárat, a második esetében pedig Spring AOP-t használj. </para>
+
+		<programlisting> 
+
+		 </programlisting>
+
+		<para> 
+
+		 </para>
+
+	</section>
+
+</chapter>

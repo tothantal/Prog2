@@ -1,0 +1,246 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>6. hét - Helló, Gödel!</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> EPAM: Mátrix szorzás Stream API-val </title>
+		<para> Implementáld le a mátrix szorzást Java-ban for és while ciklusok használata nélkül. </para>
+
+		
+
+		<programlisting> 
+public interface Matrix {
+
+	void setElement(int x, int y, int value);
+
+	Matrix multiply(Matrix input);
+
+}
+		</programlisting>
+
+		<para> 
+Ez az interface leírja, hogy mit várunk el a mátrixunktól. A setElement(x, y, value) bele fog illeszteni egy mátrix x és y koordinátáiba egy value értéket. A multiply fogja elvégezni a mátrix szorzást.
+		</para>
+
+		<para> 
+A következő kód tartalmazza a mátrix alap implementálását:
+		</para>
+
+		<programlisting> 
+import java.util.Arrays;
+import com.epam.training.matrix.Matrix;
+
+public abstract class AbstractMatrix implements Matrix {
+
+	protected final int[][] matrix;
+	protected final int rowsLenght;
+	protected final int columnsLenght;
+
+	public AbstractMatrix(int[][] matrix) {
+		this.matrix = matrix;
+		this.rowsLenght = matrix.length;
+		this.columnsLenght = matrix[0].length;
+	}
+
+	public AbstractMatrix(int rowsLenght, int columnsLenght) {
+		this.matrix = new int[rowsLenght][columnsLenght];
+		this.rowsLenght = rowsLenght;
+		this.columnsLenght = columnsLenght;
+	}
+
+	@Override
+	public void setElement(int x, int y, int value) {
+		matrix[x][y] = value;
+	}
+
+	@Override
+	public Matrix multiply(Matrix input) {
+		if (input instanceof AbstractMatrix) {
+			return multiply((AbstractMatrix) input);
+		}
+		throw new IllegalArgumentException("The input matrix should be an instance of AbstractMatrix");
+	}
+
+...
+}
+		</programlisting>
+
+		<para> 
+A feladat lényegi része a mátrix szorzás funkcionális megoldása, ami a következő kódrészletben található:
+		</para>
+
+		<programlisting> 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
+import com.epam.training.matrix.Matrix;
+
+public class LambdaMatrix extends AbstractMatrix {
+
+	public LambdaMatrix(int[][] matrix) {
+		super(matrix);
+	}
+
+	public LambdaMatrix(int rowsLenght, int columnsLenght) {
+		super(rowsLenght, columnsLenght);
+	}
+
+	@Override
+	protected Matrix multiply(AbstractMatrix input) {
+		int[][] result = Arrays.stream(this.matrix)
+				.map(r -> IntStream.range(0, input.columnsLenght)
+						.map(i -> IntStream.range(0, input.rowsLenght).map(j -> r[j] * input.matrix[j][i]).sum())
+						.toArray())
+				.toArray(int[][]::new);
+		return new LambdaMatrix(result);
+	}
+
+}
+		</programlisting>
+
+		<para> 
+A multiply() metódus először egy kétdimenziós result tömböt készít, amelyhez hozzáad egy a mátrixból (kételemű tömbből) készült streamet. Majd a map-ek segítségével végigiterálunk a sorokon és oszlopokon és elvégezzük rajtuk a sum() metódust. . Végezetül az eredményből készít egy új kétdimenziós tömböt, amit a függvény visszaad eredményül.
+		</para>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: LinkedList vs ArrayList </title>
+		<para> Mutass rá konkrét esetekre amikor a Java-beli LinkedList és ArrayList rosszabb performanciát eredményezhet a másikhoz képest. (Lásd még LinkedList és ArrayList forráskódja). Végezz méréseket is. (mit csinál az ArrayList amikor megtelik) </para>
+
+
+		<para> 
+A mérések:
+		</para>
+
+		<programlisting> 
+--- List measurement ---
+Starting 'collection setup' measuring
+ArrayList, Millisec: 1087
+ArrayList, Millisec: 612
+LinkedList, Millisec: 1959
+Starting 'frequent change' measuring
+ArrayList, Millisec: 1139
+ArrayList, Millisec: 1412
+LinkedList, Millisec: 16
+Starting 'get' measuring
+ArrayList, Millisec: 0
+ArrayList, Millisec: 0
+LinkedList, Millisec: 111
+		</programlisting>
+
+		<para> 
+Az eredmények sorra a listához valü hozzáadás, listából való törlés, és listából való adott elem hozzáférése. Java-ban ArrayListet akkor érdemes használnunk a mérés alapján, ha gyors hozzáférést szeretnénk biztosítani az elemekhez. Viszont ha listánkból törölni is szeretnénk, akkor a LinkedList biztosít jobb teljesítményt. 
+		</para>
+
+		<para> 
+LinkedListet akkor érdemes használni, ha végig akarunk iterálni rajta. Ha nem egy adott index értékével akarunk dolgozni, hanem végig akarunk menni a listán előről vagy hátulról.
+		</para>
+
+		<para> 
+Ezzel ellentétben az ArrayList gyors hozzáférést biztosít, bármelyik elemet szeretnénk elérni.
+		</para>
+
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Refactoring </title>
+		<para> Adott egy “legacy” kód mely tartalmaz anonymus interface implementációkat, ciklusokat és feltételes kifejezések. Ebben a feladatban ezt a “legacy” kódot szeretnénk átírni lambda kifejezések segítségével (metódus referencia használata előnyt jelent!) </para>
+
+		<programlisting> 
+Runnable runnable = new Runnable() {
+            @Override
+           	public void run() {
+                System.out.println("Runnable!");
+           }
+};
+		runnable.run();
+		</programlisting>
+
+		<para> 
+A fenti legacy kód egyszerűen kiírja nekünk, hogy „Runnable!”. Ha ezt át szeretnénk íratni lambdák segítségével, akkor elegendő visszatérítenünk egy olyan lambda függvény eredményét, amely kiírja a konzolra azt, hogy „Runnable!”.
+		</para>
+
+		<programlisting> 
+private Runnable createRunnable() {
+       	return () -> System.out.println("Runnable!");
+}
+		</programlisting>
+
+		<para> 
+A következő kódrészlet Calculator.calculate() függvénye visszaadja egy kapott szám négyzetét:
+		</para>
+
+		<programlisting> 
+Calculator calculator = new Calculator() {
+      @Override
+      public Integer calculate(Integer number) {
+      		return number * number;
+      }
+};
+		</programlisting>
+
+		<para> 
+Ezt a következőképpen lehet lambdákkal megoldani:
+		</para>
+
+		<programlisting> 
+private Calculator createCalculator() {
+        return number -> number * number;
+}
+		</programlisting>
+
+		<para> 
+Visszaadja a number paramétert, ahol a number megvan szorozva önmagával.
+		</para>
+
+		<programlisting> 
+
+Consumer&lt;Integer&gt; method = new Consumer&lt;Integer&gt;() {
+	@Override
+	public void accept(Integer integer) {
+		System.out.println(integer);
+	}
+};
+		</programlisting>
+
+		<para> 
+A Consumer.accept() kiírja a kapott számot a konzolra:
+		</para>
+
+		<programlisting> 
+
+private Consumer<Integer> createConsumerMethod() {
+	return System.out::println;                 	
+}
+		</programlisting>
+
+		<para> 
+A System.out::println ugyanaz, mintha azt írnánk, hogy number -> System.out.println(number);
+		</para>
+
+		<para> 
+A Formatter.format() pedig kap egy Integer listát, majd kiírja öket egy számként, szóközök nélkül
+		</para>
+
+		<programlisting> 
+
+private Formatter createFormatter() {
+	return numbers -> numbers.stream()
+		.map(String::valueOf)
+		.collect(Collectors.joining());
+ }
+
+		</programlisting>
+
+		<para> 
+Itt a String::valueOf a number -> String.valueOf(number) lambdának felel me
+		</para>
+
+	</section>
+
+</chapter>

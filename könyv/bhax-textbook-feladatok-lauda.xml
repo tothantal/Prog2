@@ -1,0 +1,279 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>8. hét - Helló, Lauda!</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> Port scan </title>
+		<para> Mutassunk rá ebben a port szkennelő forrásban a kivételkezelés szerepére! </para>
+
+		<para> 
+Maga a forrás:
+		 </para>
+
+		<programlisting> 
+public class KapuSzkenner {
+    
+    public static void main(String[] args) {
+        
+        for(int i=0; i&lt;1024; ++i)
+            
+            try {
+                
+                java.net.Socket socket = new java.net.Socket(args[0], i);
+                
+                System.out.println(i + " figyeli");
+                
+                socket.close();
+                
+            } catch (Exception e) {
+                
+                System.out.println(i + " nem figyeli");
+                
+            }
+    }
+    
+}
+		</programlisting>
+
+		<para> 
+A program megnézi, hogy a gépünk éppen milyen portokat figyel. Végigiterál a parancssorban megkapott nevű gép 1024 alatti TCP kapuin és megpróbál megnyitni egy TCP kapcsolatot.
+		 </para>
+
+		<para> 
+Ha ez sikerül, az eredmény „figyeli”, egyébként egy kivételt kapunk, amit később a catch blokkban kezelünk, azzal, hogy kiítjuk „nem figyeli”
+		 </para>
+
+		<para> 
+Az eredmény:
+		 </para>
+
+		<programlisting> 
+.
+.
+.
+19 nem figyeli
+20 nem figyeli
+21 figyeli
+22 figyeli
+23 nem figyeli
+24 nem figyeli
+25 figyeli
+26 nem figyeli
+.
+.
+.
+79 nem figyeli
+80 figyeli
+81 nem figyeli
+82 nem figyeli
+.
+.
+.
+		</programlisting>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: DI </title>
+		<para> fImplementálj egy alap DI (Dependency Injection) keretrendszert Java-ban annotációk és reflexió használatával megvalósítva az IoC-t (Inversion Of Control). </para>
+
+
+
+		<para> 
+A Dependency Injection, vagy magyarul függőségbefecskendezés az, amikor egy objektumnak vagy keretrendszernek függőséget adunk át. A Dependency Injetction megkönnyíti a tesztelést. A befecskendezés megtörténhet a konstruktoron keresztül
+		 </para>
+
+		<para> 
+Például legyen fenti SomeClass() osztálynak a konstruktora:	
+		 </para>
+
+		<programlisting> 
+public SomeClass() {
+    myObject = Factory.getObject();
+}
+		 </programlisting>
+
+		<para> 
+Ha a myObject objektum komplex feladatokban is részt vesz, akkor nehéz tesztelni a SomeClass-t. Erre a megoldás a dependency injection, azaz az objektum átadása a SineCkass-nak. Ezt Java-ban a this kulcsszóval tudjuk használni.
+		 </para>
+
+		<programlisting> 
+public SomeClass (MyClass myObject) {
+    this.myObject = myObject;
+}
+		 </programlisting>
+
+		<para> 
+A DI keretrendszerben található dependency injection a DiContextBuilder osztályban:
+		 </para>
+
+		<programlisting> 
+…
+
+private class BeanDefinition {
+		String name;
+		Class type;
+		Method builderMethod;
+		List&lt;BeanDefinitionParameter&gt; dependencies;
+
+		public BeanDefinition(String name, Class type, Method builderMethod,
+				List&lt;BeanDefinitionParameter&gt; dependencies) {
+			super();
+			this.name = name;
+			this.type = type;
+			this.builderMethod = builderMethod;
+			this.dependencies = dependencies;
+		}
+	}
+
+	private class BeanDefinitionParameter&lt;T&gt; {
+		String name;
+		Class<T> type;
+
+		public BeanDefinitionParameter(String name, Class&lt;T&gt; type) {
+			super();
+			this.name = name;
+			this.type = type;
+		}
+	}
+…
+		 </programlisting>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Kivételkezelés </title>
+		<para> Adott az alábbi kódrészlet. Mi történik, ha az input változó 1F, “string” vagy pedig null? Meghívódik e minden esetben a finally ág? Válaszod indokold!  </para>
+
+
+		<programlisting>
+public class ExceptionHandling {
+
+    public static void main(String[] args) {
+        System.out.println("Test case when input is null!");
+        test(null);
+
+        try {
+            System.out.println("Test case when input is float!");
+            test(1F);
+        } catch (Exception ignored) {
+
+        }
+
+        System.out.println("Test case when input is String!");
+        test("string");
+    }
+...
+		</programlisting>
+
+		<para> 
+A fenti kód a képen lévő kódrészlethez lesz hozzáadva. A tesztelést a képen definiált test() függvénnyel végezzük.
+		</para>
+
+		<para> 
+Ami érdekes, hogy az 1F tesztelése esetén szükség van kivételkezelésre a main függvényben is. Ha ezt nem tesszük meg, a következő eredményt kapjuk:
+		</para>
+
+		<programlisting>
+Exception in thread "main" com.epam.training.ParentException
+	at com.epam.training.ExceptionHandling.test(ExceptionHandling.java:29)
+	at com.epam.training.ExceptionHandling.main(ExceptionHandling.java:10)
+		</programlisting>
+
+		<para> 
+A tesztelésünk String része nem fog lefutni.
+		</para>
+
+		<para> 
+Az Exception ignored kód azt csinálja, hogy ha elkap valamilyen kivételt, akkor azt figyelmen kívül hagyja.
+		</para>
+
+		<para> 
+A kód képen lévő része:
+		</para>
+
+		<programlisting>
+private static void test(Object input) {
+        try {
+            System.out.println("Try!");
+            if (input instanceof Float) {
+                throw new ChildException();
+            } else if (input instanceof String) {
+                throw new ParentException();
+            } else {
+                throw new RuntimeException();
+            }
+        } catch (ChildException e) {
+            System.out.println("Child Exception is caught!");
+            if (e instanceof ParentException) {
+                throw new ParentException();
+            }
+        } catch (ParentException e) {
+            System.out.println("Parent Exception is caught!");
+            System.exit(1);
+        } catch (Exception e) {
+            System.out.println("Exception is caught!");
+        } finally {
+            System.out.println("Finally!\n");
+        }
+    }
+		</programlisting>
+
+		<para> 
+A fenti kód leteszteli a megadott kódrészletet. Először null-lal, majd float és string értéket használva. Az eredmény a következő:
+		</para>
+
+		<programlisting>
+Test case when input is null!
+Try!
+Exception is caught!
+Finally!
+
+Test case when input is float!
+Try!
+Child Exception is caught!
+Finally!
+
+Test case when input is String!
+Try!
+Parent Exception is caught!
+		</programlisting>
+
+		<para> 
+Amint az látható, a null input kivételt eredményez. Belépünk a test-en belüli try blokkba, majd dobunk egy új RuntimeException-t.
+		</para>
+
+		<para> 
+Hasonló az eredmény float (1F) esetén, ahol egy child exception-t kap el a függvény. A ChildExpection a ParentException alosztálya. A kódban ez a következőképpen néz ki:
+		</para>
+
+		<programlisting>
+public class ChildException extends ParentException {
+
+}
+		</programlisting>
+
+		<para> 
+A ParentException pedig a RuntimeException-höz tartozik.
+		</para>
+
+		<programlisting>
+public class ParentException extends RuntimeException {
+
+}
+		</programlisting>
+
+		<para> 
+A float esetén is meghívódik a finally ág.
+		</para>
+
+		<para> 
+Végezetül a string esetén dobunk egy ParentException-t, amit ha elkapunk, kilépünk a programból a System.exit(status 1) függvénnyel. Ezért a függvény miatt nem fog meghívódni a finally ág String esetén.
+		</para>
+
+	</section>
+
+</chapter>

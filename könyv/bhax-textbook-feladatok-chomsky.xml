@@ -1,0 +1,185 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	<info>
+	        <title>4. hét - Helló, Chomsky!</title>
+	        <keywordset>
+        		<keyword/>
+        	</keywordset>
+    	</info>
+    	<section>
+    		<title> EPAM: Order of everything </title>
+		<title> feladat címe </title>
+		<para>Collection-ok rendezése esetén jellemzően futási időben derül ki, ha olyan típusú objektumokat próbálunk rendezni, amelyeken az összehasonlítás nem értelmezett (azaz T típus esetén nem implementálják a Comparable<T> interface-t). Pl. ClassCastException a Collections.sort() esetében, vagy ClassCastException a Stream.sorted() esetében.</para>
+		<para> Írj olyan metódust, amely tetszőleges Collection esetén vissza adja az elemeket egy List-ben növekvően rendezve, amennyiben az elemek összehasonlíthatóak velük azonos típusú objektumokkal. Ha ez a feltétel nem teljesül, az eredményezzen syntax error-t. Például: </para>
+		<programlisting> List&lt;Integer&gt; actualOutput = createOrderedList(input); </programlisting>
+		<para> Ahol az input Collection&lt;Integer&gt; típusú. Természetesen más típusokkal is működnie kell,
+feltéve, hogy implementálják a Comparable interface-t. </para>
+
+
+		<programlisting>
+public class OrderOfEverythingTest {
+
+@ParameterizedTest
+    	@MethodSource("collectionsToSortDataProvider")
+    	public void testOrderShouldReturnExpectedListWhenCollectionIsPassed(Collection&lt;Integer&gt; input, List&lt;Integer&gt; expectedOutput) {
+        // Given as parameters
+
+        // When
+        // createOrderedList(List.of(new OrderOfEverythingTest()));
+        List&lt;Integer&gt; actualOutput = createOrderedList(input);
+
+        // Then
+        assertThat(actualOutput, equalTo(expectedOutput));
+    }
+
+    private static Stream&lt;Arguments&gt; collectionsToSortDataProvider() {
+        return Stream.of(
+            Arguments.of(Collections.emptySet(), Collections.emptyList()),
+            Arguments.of(Set.of(1), List.of(1)),
+            Arguments.of(Set.of(2,1), List.of(1,2))
+        );
+    }
+
+    private &lt;T extends Comparable&lt;T&gt;&gt; List&lt;T&gt; createOrderedList(Collection&lt;T&gt; input) {
+        return input.stream()
+            .sorted()
+            .collect(Collectors.toList());
+    }
+}
+		</programlisting>
+
+		<para>
+A createOrderedList egy olyan metódus, amely egy olyan listával tér vissza, amelynek elemeit össze lehet hasonlítani. Ezt a tulajdonságot a &lt;T extends Comparable&lt;T&gt;&gt;-vel lehet jelezni. A megkapott inputot rendezi, majd összegyűjti egy listába.
+		</para>
+
+		<para>
+A collectionsToSortDataProvider egy factory metódus, amely listák és setekből álló Stream objektumokat térít vissza. Ezeket a return értékeket a JUnit fel tudja használni inputként a teszteléshez a @MethodSource jelölés segítségével.
+		</para>
+
+		<para>
+A teszt lényegi részében, az első függvényben pedig megtörténik maga az összehasonlítás. A teszt sikeres lesz, hiszen a createOrderedList csak olyan listákkal fog visszatérni, amelyek elemei összehasonlíthatóak egymással, és most pontosasn ezt vizsgáljuk. 
+		</para>
+
+		<para>
+Viszont a CreateOrderedList(List.of(new OrderOfEverythingTest)) már syntax error-t fog nekünk dobni, mert az OrderOfEverythingTest nem implementálja a Comparable&lt;OrderOfEverythingTest&lt;-et, azaz az elemei nem feltétlenül hasonlíthatóak össze.
+		</para>
+
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Bináris keresés és Buborék rendezés implementálása</title>
+		<para> Implementálj egy Java osztályt, amely képes egy előre definiált n darab Integer tárolására. Ennek az osztálynak az alábbi funkcionalitásokkal kell rendelkeznie:
+Elem hozzáadása a tárolt elemekhez
+
+Egy tetszőleges Integer értékről tudja eldönteni, hogy már tároljuk-e (ehhez egy bináris keresőt implementálj)
+
+A tárolt elemeket az osztályunk be tudja rendezni és a rendezett (pl növekvő sorrend) struktúrával vissza tud térni (ehhez egy buborék rendezőt implementálj) </para>
+
+
+		<para> 
+Kezdetnek van az IntegerCollection osztályunk:
+		 </para>
+
+		<programlisting> 
+public class IntegerCollection {
+
+	int[] array;
+	int index = 0;
+	int size;
+	boolean sorted = true;
+
+	public IntegerCollection(int size) {
+		this.size = size;
+		this.array = new int[size]
+}
+
+public IntegerCollection(int[] array) {
+	this.size = array.length;
+this.index = this.size;
+this.array = array;
+this.sorted = false;
+}
+
+	// ...
+
+}
+		 </programlisting>
+
+		<para> 
+Amint láthatjuk, a típus igazából egy tömbből áll. Továbbá szükségünk van még egy indexre, amely alapból 0, azaz az első elemre fog mutatni, egy méretre és egy sorted booleanra, amely azt mondja meg nekünk, hogy rendezve van-e az objektumunk.
+		 </para>
+
+		<para> 
+A setterek a megszokottak. Nincs bennük semmi különös.
+		 </para>
+
+		<para> 
+Ami a feladat szempontjából lényeges, azok a contains() és a sort() algoritmusok
+		 </para>
+
+		<programlisting> 
+public boolean contains(int value) {
+	
+	if (!sorted) {
+		sort();
+	}
+
+	int left = 0, right = size – 1;
+	while(left &lt;= right) {
+		int mid = left + (right - left) / 2;
+
+		if (array[mid] == value) {
+		return true;
+	}
+
+	if (array[mid] &lt; value) {
+		left = mid + 1
+	} else {
+		right = mid - 1
+	}
+}
+
+return false;
+}
+		 </programlisting>
+
+		<para>
+Ez a metódus a bináris keresés implementációja. A bináris keresés lényege, egy rendezett számsor esetén meghatározzuk a sor középső számát. Ha ez a szám nem a keresett értékünk, attól függően, hogy a keresett érték nagyobb, vagy kisebb, eltoljuk a keresési intervallum jobb, illetve bal oldalát középre. Ha ez megvan, meghatározzuk az új bal vagy jobb érték segítségével az új közepet és folytatjuk így tovább a folyamatot amíg meg nem találjuk a keresett éltéket.
+		</para>
+
+		<programlisting> 
+public int[] sort() {
+	for (int i = 0; i &lt; size - 1; i++) {
+		for (int j = 0; j &lt; size - i - 1; j++) {
+			if (array[j] &gt; array[j + 1]) {
+				int temp = array[j];
+				array[j] = array[j + 1];
+				array[j + 1] = temp;
+			}
+		}
+	}
+	sorted = true;
+	return array;
+}
+		 </programlisting>
+
+		<para>
+A fenti kódrész pedig a buborékrendezés implementációja. A buborékrendezés valószínüleg a legegyszerűbb rendezési módszer, ugyanakkor elég lassú. Lényege, hogy végighaladva a számsoron összehasonlítunk minden szomszédos értéket egymással, és ha a bal oldali nagyobb a jobb oldalinál, megcseréljük őket.
+		</para>
+
+		<para>
+Egy kicsit javítani lehet az alap módszeren azzal, hogy az átnézendő intervallumot mindig csökkentjük egyel, hiszen a egy sor végigiterálása után mindenképpen helyére kerül legalább egy érték, amely a legnagyobb azok közül, amelyek még nem voltak a helyükön.
+		</para>
+
+	</section>
+
+    	<section>
+    		<title> EPAM: Saját HashMap implementáció </title>
+		<para> feladat leírása </para>
+
+		<programlisting> FELADAT KÓD </programlisting>
+		<para> feladat megoldása </para>
+
+	</section>
+
+</chapter>

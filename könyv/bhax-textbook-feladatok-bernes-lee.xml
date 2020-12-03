@@ -1,0 +1,244 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+	
+	<section>
+		<title> 0. hét - "Hello Bernes-Lee!" </title>
+	</section>
+
+    	<section>
+    		<title> Java és C++ Összehasonlítása </title>
+
+		<para> 
+A Java nyelv és környezet tervezői a szintaxis számára a C és a C++ nyelvek szintaxisát vették alapul. Számos C++ kifejezés, utasítás szintaktikailag helyes Java-ban is, és sokszor ma jelentésük is hasonló. Azonban 				természetesen a hasonlóság nem azonosság.
+		</para>
+
+		<para>
+A Java mint nyelv szűkebb a C++-nál, ugyanakkor szabványos osztálykönyvtárai szélesebb területet fednek le. Nyelvi szinten támogatja a thread-eket, a grafikus felhasználói felület programozását, a hálózati programozást, a perzisztenciát, különböző processzek közötti osztott objektumelérést, adatbázisok tartalmának elérését stb. A szabványos kiegészítő csomagokkal ez a terület még tovább bővül a kriptográfiával, elektronikus levelezéssel stb. Ezeket a fogalmakat persze C++-ban is lehet kezelni, de a C++ nyelv, illetve a szabványos könyvtár közvetlenül nem terjed ki ezekre a részekre. Valamely külső könyvtár segítségét kell igénybe vennünk.
+		</para>
+
+		<para>
+A C++-al írhatunk forrásszinten hordozható programokat, amelyet a célgépen újrafordítva és szerkesztve helyes, futó programot kapunk. Az összeszerkesztett bináris kód azonban nem hordozható. Ezzel szemben a Java célkitűzései között szerepel a platformok közötti bináris hordozhatóság. A bájtkóddá lefordított programot átvihetjük más gépekre ahol szabványos Java virtuális gép környezetet használunk.
+		</para>
+
+		<para>
+Az objektummodellek különbözőségéből, alapvető különbségek adódnak a C++ és a Java között. A C++ nyelv az objektumokat, mint a memória egy összefüggő területén elhelyezkedő bájtsorozatot fogja fel. Ennek a memóriakiosztása ismert, ennek megfelelően manipulálja a lefordított program az objektumot. A C++ nyelvben a mutatók révén közvetlenül manipulálhatjuk a memóriát. 
+		</para>
+
+		<para>
+Ezzel szemben a Java programok virtuális gépen futnak: a memóriát közvetlenül nem tudjuk elérni, hanem csak szimbolikusan, hivatkozásokon keresztül. A Java esetén nincs linker, ami címekké oldaná fel a hivatkozásokat. Egy osztály egy önálló class fájllá fordul le. A class fájl formátuma szabványos és platform független. 
+		</para>
+
+		<para>
+A Java virtuális gép az objektumokat egy automatikus szemétgyűjtő mechanizmus által felügyelt véletlen elérésű tárterületen tárolja. A dinamikus tárban lefoglalt memória programozói felszabadítása közvetlenül nem lehetséges. A Java nyelvből hiányzik a destruktor mechanizmus.
+		</para>
+
+		<para>
+A C++ nyelv többparadigmás. Írhatunk procedurális programokat, egymást hívó függvényekkel, változókkal. Alkalmazhatjuk az objektumorientált elveket; akár objektumokat létrehozva, akár bonyolult osztály-hierarchiák, öröklődés, virtuális függvények és egyéb technikák használatával. Végül írhatunk generikus elvű programokat is, könyvtárak, intenzív template-használattal. Ezeket az eszközöket vegyíthetjük is.
+		</para>
+
+		<para>
+Ezzel szemben a Java csak az objektumorientált programozást támogatja. Nincsenek globális változók és függvények, csak osztályokhoz tartozó attribútumok, változók, konstansok és metódusok.
+		</para>
+
+		<para>
+A Java tömbjei tudják méretüket, ezért a main metódus megadásánál szükségtelen a C++-nál megszokott argc megadása. Elég csak egy String tömb értékű argumentum. C és C++-al ellentétben a Java-ban a main első argumentuma nem tartalmazza a program nevét. Ha létezik 0 indexű paraméter, akkor az az első parancssori argumentumot tartalmazza. C++-ban gyakran nem deklaráljuk a main argumentumait, ha azokat nem használjuk a programból. Az üres argumentumú main a Java-ban is lefordul, egyéb célokra használhatjuk is, de futási idejű hibát okoz, ha az osztály belépési pontjául szánjuk.
+		</para>
+
+		<para>
+A Java-ban a C++-ban megszokott /* blokk kommenten */ és a // sorkommenten kívül a blokk-komment speciális eseteként létezik a /** jelekkel elindított úgynevezett dokumentációs komment. Ezekből a javadoc segítségével HTML-formátumú dokumentáció generálhatunk.
+		</para>
+
+		<para>
+A C és C++ forrást fordításkor először az előfordító dolgozza fel. Ilyen előfordító a Java környezetben nincsen. 
+		</para>
+
+		<para>
+A java fordítás fájlállományok beemelését nem támogatja, a makrókat sem, de a szimbólumbehelyettesítést olyan értelemben igen, hogy a szimbólumként való használatra szánt azonosítókat valamilyen osztályban vagy interfészben final static adattagokként definiálhatjuk. Ezen adattagok értékét a fordító figyelembe veszi fordításkor.
+		</para>
+
+		<para>
+A C és C++ nyelvekben a fordító az egyes forrásállományokat egymástól függetlenül fordítja le. Ahhoz, hogy a több forrásból is hivatkozott objektumokat konzisztensen használjuk, az állományokban azonosan kell deklarálnunk őket. Az ilyen közös deklarációkat általában egy angolul header-nek nevezett fejállományban helyezzük el. 
+		</para>
+
+		<para>
+Ilyen mechanizmusra Java-ban nincs szükségünk. Java-ban az osztály interfészre és implementációs részre való szétválasztását nem kell azzal kihangsúlyoznunk, hogy a deklarációkat külön állományba helyezzük.
+		</para>
+
+		<para>
+C++-ban egy osztály deklarációja és definíciója elkülönül, és a deklaráció végső zárójele után pontosvessző van. Java-ban erre nincs szükség, de nem is hiba.
+		</para>
+
+		<para>
+A Java tömbjei tudják méretüket, ezért a main metódus megadásánál szükségtelen a C++-nál megszokott argc megadása. Elég csak egy String tömb értékű argumentum. C és C++-al ellentétben a Java-ban a main első argumentuma nem tartalmazza a program nevét. Ha létezik 0 indexű paraméter, akkor az az első parancssori argumentumot tartalmazza. C++-ban gyakran nem deklaráljuk a main argumentumait, ha azokat nem használjuk a programból. Az üres argumentumú main a Java-ban is lefordul, egyéb célokra használhatjuk is, de futási idejű hibát okoz, ha az osztály belépési pontjául szánjuk.
+		</para>
+
+		<para>
+Ha egy osztály definícióit egy másik osztályból fel szeretnénk használni, az import paranccsal tehetjük láthatóvá a szükséges neveket.
+		</para>
+
+		<para>
+A C és C++ nyelvben a beépített típusok pontos mérete és értéktartománya nincs definiálva, így az egyes implementációk saját igényeik szerint járhatnak el. A program más platformokon újrafordítva használja ki az adott platform minden előnyét.
+		</para>
+
+
+		<para>
+Ezzel szemben a Java, amely egy bináris kompatibilitást ígérő nyelv, szigorúbb definíciókkal él. Az egyes típusok mérete és értéktartománya platform függetlenül definiált. A Java erős korlátozásokkal él a primitív típusokkal szemben. Ilyen típusokhoz tartozó változókat nem hozhatunk létre futási idő alatt.
+		</para>
+
+
+		<para>
+A java nyelvben nincsenek külön objektumok és mutatók. Az objektumok a dinamikus tárterületen jönnek létre, és csakis hivatkozásokon keresztül érjük el őket, külön mutató vagy referencia szintaxis alkalmazása nélkül. Ugyanígy nincsenek sem függvénymutatók, sem tagfüggvényre, vagy osztály adattagjára mutató pointerek. Ezek helyett a Java-ban objektum-referenciákat, visszatérési értékeket, tömböket, interfészeket használhatunk, vagy ha minden kötél szakad az önelemzp java.lang.reflect csomagot.
+		</para>
+
+
+		<para>
+A Java-ban nincs lehetőség felhasználói operátorok definiálására. Ami a primitív típusokra vonatkozik, a C++-ból jól ismert és a megfelelő primitív típusokkal manipuláló aritmetikai, logikai, bitmanipuláló, összehasonlító, kiválasztó operátorok mellet a Java az előjel-kiterjesztéses >> mellett ismeri a >>> zéró-kiterjesztéses jobbra léptetést, azaz a balról belépő bit mindig 0. Ellentétes &lt;&lt;&lt; operátor nem létezik.
+		</para>
+
+
+		<para>
+A const kulcsszó Java-ban ismert, de jelentése nincs, használata hibás. A C++-ban lehetőségünk van egy osztály tagfüggvényét konstansnak deklarálni, kifejezve, hogy az adott függvény konstans objektumra is alkalmazható. Egy adattagot mutable-nek deklarálva jelezhetjük, hogy ő konstans függvényben is módosítható. 
+		</para>
+
+
+		<para>
+A Java-ban ezek a lehetőségek nincsenek. Létezik a final kulcsszó, amely adattagra vonatkozva az adott változó értékének a változatlanságát, metódusra vonatkozva a metódus felülbírálhatatlanságát, osztályra vonatkozva azt jelenti, hogy nem lehet belőle származtatni
+		</para>
+
+
+		<para>
+A C++-ban egy függvény argumentumának adhatunk alapértelmezett értéket. Ilyen lehetőség a Java-ban nincs. 
+		</para>
+
+
+		<para>
+A Java és a C++ utasításkészlete hasonlít. A deklarációk egy blokkon belül követhetnek nem deklarációs utasítást. Akárcsak C++-ban ezt a lehetőséget Java-ban is kihasználva a lehető legkisebbre szabhatjuk változóink hatókörét
+		</para>
+
+
+		<para>
+A goto kulcsszó ismert a Java-ban, de nincs jelentése és használata hibás lesz. Azonban goto-t nem sokszor használunk C és C++-ban sem. Cymkék vannak, a Java-ban, de nem a goto utasítás, hanem a continue és break utasítások tárgyát adják meg.
+		</para>
+
+
+		<para>
+A Java nyelvi szinten megkülönbözteti az osztályokat valamint az interfészeket. Az osztályok körében a Java egyszeres öröklődést támogat. és ha egy osztálynak nincsen a forráskódban megadott szülőosztálya, akkor implicit módon az Object osztály lesz az. Az öröklődést az extends kulcsszó jelzi. A C++-tól eltérően nincs különbség a protected, private és public öröklődés között.
+		</para>
+
+
+		<para>
+Ezen kívül létezik az abstract kulcsszó is. ha egy osztályt abstract-nak deklarálunk, akkor egyrészt nem példányosítható, másrészt lehetnek benne tisztán virtuális, azaz csak deklarált, de nem implementált metódusok.
+		</para>
+
+
+		<para>
+A Java a C++-ból ismert háromféle hozzáférési kategória mellett támogatja a külön kulcsszóval nem jelölt félnyílvános hozzáférési kategóriát, amelyik az illető osztályt tartalmaző csomag osztályai számára teszi lehetővé az elérést. A hozzáférési kategóriát a C++-tól eltérően nem címekéhez hasonló módon, hanem az egyes adattagok vagy metódusok minősítéseként adjuk meg.
+		</para>
+
+
+		<para>
+Az egyes hozzáférési kategóriák az általuk engedett hozzáférés körének szűkülő sorrendjében: public, protected, félnyílvános, private. 
+		</para>
+
+
+		<para>
+A Java-ban nincs barátság, nincs friend deklaráció. Ha mégis szükségünk lenne hasonló funkcióra, azt a Java-ban beágyazott osztályok alkalmazásával érhetjük el. Ez formailag hasonlít a C++-ére, mégis lényegi különbség van a kettő között. A beágyazott Java osztály metódusai ugyanis elérik a beágyazás helyén látható változókat. A C++ beágyazott osztályának nincsen különleges hozzáférési joga a bennfoglaló osztály tagjaihoz, pusztán a névterek kerülnek beágyazásra.
+		</para>
+
+
+		<para>
+A C nyelvben a struktóra tagjainak összegyűjtését, egy objektumba kapcsolását jelenti. A C++ nyelvben szigorúan véve a struktúra olyan osztályt jelent, amelyben az alapértelmezett elérési kategória publikus mind az attribútumokra, a metódusokra és az öröklődésre. A Java-ban nincsen külön struktúra, helyette osztályt kell alkalmaznunk.
+		</para>
+
+
+		<para>
+Az 5-ös verziótól kezdve a Java is használhatja a C++ egyik népszerű típuskonstrukcióját, a felsorolást. Első ránézésre a Java nyelvbe épített felsorolás típus hasonlít a C++ megfelelőjére, azonban a Java felsorolástípusa egy teljes osztályt definiál. Tetszőleges új mezőket és metódusokat adhatunk ehhez az osztályhoz.
+		</para>
+
+
+		<para>
+Bitmezők, uniók megfelelői Java-ban nem léteznek. Unió használata C++-ban két esetben indokolt: amikor helyet szeretnénk megtakarítani, és amikor konverziót szeretnénk elkerülni. Az első esethez kihasználhatjuk, hogy Java-ban minden osztálynak őse az Object osztály.
+		</para>
+
+
+		<para>
+Java-ban az alapvető objektumokat tartalmazó java.lang csomagban található a beépített String osztály. A String osztály final, azaz nem származtathatunk belőle másik osztályt. így a metódusok felülbírálása révén sem változtathatjuk meg a viselkedését.
+		</para>
+
+
+		<para>
+Hatókör operátor Java-ban nincs. Az osztály és az interfésznevek minősítőként alkalmazhatóak statikus tagok elérésére, ennek szintaxisa a tagkiválasztó ponton alapul.
+		</para>
+
+
+		<para>
+Névtérnek nagyjából a Java csomagjai felelnek meg, habár a Java-ban nincsenek globális változók, konstansok vagy függvények, csak osztályokhoz és interfészekhez tartozók. A Java osztályok és interfészek csomagokba vannak rendezve. Egy csomagban további részcsomagok és/vagy osztályok, interfészek lehetnek.
+		</para>
+
+
+		<para>
+A C++ nyelvhez hasonlóan a Java-ban is van kivételkezelés. A fő elemek Java-ban is a try blokk, ahol a kivétel kiváltását figyeljük, az ezt követő catch blokk(ok), ahol lekezeljük az eldobott kivételeket és a throw kifejezés, ahol a kivételt kiváltjuk. Ezen kívül a Java-ban létezik a finally kifejezés is.
+		</para>
+
+
+		<para>
+A C++ kivételek tetszőleges típusúak lehetnek, azonban Java-ban az objektum-központú szemlélete miatt nem lehet akármilyen objektumot, mint kivételt dobni, csak Throwable (vagy ettől öröklő) osztályút. Ilyenek például az Error és az Exception osztályok leszármazottjai.
+		</para>
+
+
+	</section>
+
+    	<section>
+    		<title> Python: Forstner Bertalan, Ekler Péter, Kelényi Imre: Bevezetés a mobilprogramozásba. Gyors prototípus-fejlesztés Python és Java nyelven: </title>
+
+
+		<para>
+A Python egy általános célú programozási nyelv, amit Guido van Rossum alkotott meg 1990-ben. Tulajdonképpen egy szkriptnyelv, viszont rendkívül sok csomagot és beépített eljárást alkalmaz. A sok csomag megléte jó hír, hiszen így nem kell magunktól újra feltalálni a kereket, hanem építkezhetünk a már meglévő tudásra és módszerekre. 
+		</para>
+
+		<para>
+	A Python egy interpreteres nyelv, ami abban különbözik az eddig tanult fordítóprogramos nyelvektől, hogy a programkódot az interpreter soronként értelmezi, nem pedig egyben az egészet. Ez azért jó, mert ha például van valami hiba a programunkban, akkor letesztelhetjük azt soronként is, így nem kell annyit keresgélnünk és találgatnunk a hiba hollétéről. Viszont a hátránya, hogy gyakran a programok futtatása lassabb, mint a fordítóprogramos nyelveknél.
+		</para>
+
+		<para>
+	Bár szerintem első ránézésre nem látszik rajta, a Python egy objektum-orientált nyelv, mint a C++ és a Java. Mind az immár redundáns kapcsos zárójeleket, mind az állítások végén lévő megszokott pontosvesszőket lecserélte négy darab szóközre, illetve kellemes meglepetést okozott nekem a szinte már pszeudokódra emlékeztető szintaxisa. Ennek függvényében nem emlékeztet az eddig tanult C, C++ és a főképp most tanulandó Java nyelvekre. 
+		</para>
+
+		<para>
+	Habár szerintem nem ez a legfontosabb szempont, amit egy programnyelv megítélésénél figyelembe kell venni, szerintem a Python esztétikailag is megállja a helyét.
+		</para>
+
+		<para>
+	A Python segítségével tömör és mégis könnyen olvasható programokat készíthetünk, amelyek tipikusan sokkal rövidebbek , mint a velük ekvivalens C, C++ vagy Java programok. Ennek okai többek között, hogy a magas szintű adattípusok lehetővé teszik , hogy összetett kifejezéseket írjunk le egy rövid állításban, nincs szükség változó és argumentumdefiniálásra, továbbá a kódcsoportosítás egyszerű tagolással (új sor, tabulátor) történik, illetve mint ahogy az fent is írtam, nincs szükség nyitó és záró jelzésekre.
+		</para>
+
+		<para>
+	Pythonban minden adatot objektumok reprezentálnak. Az adatokon végezhető műveleteket az objektumok típusa határozza meg. Pythonban nincs szükség a változók típusainak explicit megadására. A rendszer futási időben, automatikusan kitalálja a változók típusát a hozzárendelt érték alapján. Adattípusok lehetnek a sztringek, számok, ennesek (tuples), listák és a szótárak. 
+		</para>
+
+		<para>
+	A nyelv támogatja a más nyelvekben megszokott if elágazást, és while ciklusokat. Ezek szintaxisa szinte megegyezik a C-ben lévő megfelelőjükével, a szokásos új sorokkal és tabulátorokkal. Újdonság viszont a for ciklus használata. Már végigmehetünk kulcs-értékpárokon is a for … in segítségével.  Így egyetlen ciklusban megkaphatjuk a kulcsokat a hozzájuk tartozó értékkel. Továbbá használhatjuk még a range() függvényt, amely generál nekünk egy egész értékekből álló listát. Ennek egy változattát, az xrange()-et szintén alkalmazhatjuk egy for ciklussal, sőt, kifejezetten ehhez készítették.
+		</para>
+
+		<para>
+	A Pythonban függvényeket a def kulcsszóval definiálhatunk. A függvények rendelkeznek a szokásos paraméterekkel, amelyeknek adhatunk alapértelmezett értéket (paraméter = alapérték) szintaxissal. A függvény hívásakor az egyes argumentumokat meg tudjuk adni a megszokott módon, abban a sorrendben, amelyben megadtuk azt a függvény definiálásakor. Van visszatérési értékük, amelyek lehetnek ennesek is.
+		</para>
+
+		<para>
+	A továbbiakban csak a nyelv OOP részéről fogok írni, hiszen a tantárgy fő vonulata – a Java – is egy főleg objektum-orientált nyelv.
+		</para>
+
+		<para>
+	A Python nyelv támogatja a klasszikus, objektumorientált fejlesztési eljárásokat. Definiálhatunk osztályokat, amik példányai az objektumok . Az osztálynak lehet attribútumaik,: objektumok, illetve metódusok. A Python támogatja az osztályok közötti öröklődést.  
+		</para>
+
+		<para>
+	Az osztály metódusait ugyanúgy definiálhatjuk, mint a globális függvényeket (def használatával), azonban van egy kötelező első paraméterük, a self, amely értéke az adott objektumpéldány, amelyen a függvényt meghívják.
+		</para>
+
+		<para>
+	Az osztályok konstruktor tulajdonságú metódusa az __init__, amelynek első paraméterek ugyancsak a self, majd további paramétereket is megadhatunk, amelyek mibenléte az osztály attribútumaitól függ.
+		</para>
+
+	</section>
+
+</chapter>
