@@ -6,11 +6,114 @@
         	</keywordset>
     	</info>
     	<section>
-    		<title> feladat címe </title>
-		<para> feladat leírása </para>
+    		<title> Android telefonra a TF objektum detektálója </title>
+		<para> Telepítsük fel, próbáljuk ki! </para>
 
-		<programlisting> FELADAT KÓD </programlisting>
-		<para> feladat megoldása </para>
+
+
+
+
+		<para> 
+Miután letöltötten a 
+		</para>
+		<programlisting>
+https://github.com/tensorflow/examples/tree/master/lite/examples/object_detection/android 
+		</programlisting>
+		<para>
+tartalmát, android studio-val lefutattam a kódot, és az automatikusan felrakta az alkalmazást a laptopomhoz csatolt telefonomra.
+		 </para>
+
+		<para>
+Egy videó vagy kép esetében egy detection model fel tudja ismerni, hogy bizonyos előre ismert tárgyak jelen vannak-e az adott képen vagy videóban. Az egyes tárgyakat a program különböző keretekkel jelzi. A bal felső sarokban pedig azt tudatja velünk, hogy a tárgy mibenlétét hány százalékos biztonsággal tudja megmondani nekünk.
+		</para>
+
+		<para>
+Mivel ez csak egy teszt verzió ezért ez a bizonyosság gyakran 50-70% között mozog. Illetve kevés az ismert tárgyak halmaza és gyakran félreismer dolgokat, mint ahogy azt a 8. képen láthatjuk is, amin a kanálra azt mondja nekünk, hogy az egy kés vagy villa.
+		</para>
+
+		<para> 
+Néhány kép működés közben:
+		 </para>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/1.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/2.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/3.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/4.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/5.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/6.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/7.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/8.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/10.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+		<figure>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="tfdetect/11.jpg" format = "PNG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
 
 	</section>
 
@@ -218,19 +321,5 @@ Az output utolsó soráért pedig a következő sor felel:
 result.whenCompleteAsync((s, throwable) -> 
 	System.out.println("Complete: " +s), executorService);
 	</programlisting>
-
-    	<section>
-    		<title> EPAM: AOP </title>
-		<para> Készíts két példa projektet, melyben egyes metódusok futási idejét méred majd kiíratod úgy, hogy a metó-dus futási idejének méréséhez AOP-t használsz. Az első projektben csak az AspectJ könyvtárat, a második esetében pedig Spring AOP-t használj. </para>
-
-		<programlisting> 
-
-		 </programlisting>
-
-		<para> 
-
-		 </para>
-
-	</section>
 
 </chapter>

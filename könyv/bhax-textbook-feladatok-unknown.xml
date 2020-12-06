@@ -270,11 +270,222 @@ Az AsciiPrinter többi része azt allápítja meg, hogy milyen ASCII karakterrel
 	</section>
 
     	<section>
-    		<title> feladat címe </title>
-		<para> feladat leírása </para>
+    		<title> EPAM: Titkos üzenet, száll a gépben! </title>
+		<para> Implementájl egy olyan parancssori alkalmazást, amely a billentyűzetről olvas soronként ASCII karakterekből álló sorokat, és a beolvasott szöveget Caesar kódolással egy txt fájlba írja soronként. </para>
 
-		<programlisting> FELADAT KÓD </programlisting>
-		<para> feladat megoldása </para>
+
+
+		<para> 
+A Main.java tartalma:
+		 </para>
+
+		<programlisting> 
+package caesar;
+
+import java.io.IOException;
+
+import caesar.coder.stream.ConsoleInputToFileCeasarEncoder;
+import caesar.coder.stream.StreamEncoder;
+
+public class Main {
+
+	public static void main(String[] args) throws IOException {
+		String fileName = args[0];
+		int offset = Integer.valueOf(args[1]);
+		try (StreamEncoder handler = new ConsoleInputToFileCeasarEncoder(fileName, offset)) {
+			handler.handleInputs();
+		}
+	}
+
+}
+		 </programlisting>
+
+		<para> 
+Ez a program megkap inputként egy file-t, majd annak a tartalmának betűt eltolja egy bizonyos számmal.
+		 </para>
+
+		<para> 
+Az I/O-ért a StreamEncoder osztály felel, amelynek a forráskódja:
+		 </para>
+
+		<programlisting> 
+package com.epam.training.coder.stream;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Scanner;
+
+import com.epam.training.coder.Encoder;
+
+public class StreamEncoder implements AutoCloseable {
+
+	private static final byte[] NEW_LINE = "\n".getBytes();
+	
+	private Scanner inputScanner;
+	private OutputStream outputStream;
+	private Encoder encoder;
+
+	public StreamEncoder(InputStream inputStream, OutputStream outputStream, Encoder encoder) {
+		this.inputScanner = new Scanner(inputStream);
+		this.outputStream = outputStream;
+		this.encoder = encoder;
+	}
+
+	public void handleInputs() throws IOException {
+		String line;
+		do {
+			line = inputScanner.nextLine();
+			String encodedLine = encoder.encode(line);
+			outputStream.write(encodedLine.getBytes());
+			outputStream.write(NEW_LINE);
+		} while (!"exit".equals(line));
+	}
+
+	@Override
+	public void close() throws IOException {
+		inputScanner.close();
+		outputStream.close();
+	}
+
+}
+
+		 </programlisting>
+
+		<para>
+Ez az osztály a file-ok olvasására és írására az InputStream és OutputStream osztályokat használja. Minden sorra meghívja az Encoder interface encode metódusát, amely végzi magát a kódolást.
+		 </para>
+
+		<programlisting> 
+	public void handleInputs() throws IOException {
+		String line;
+		do {
+			line = inputScanner.nextLine();
+			String encodedLine = encoder.encode(line);
+			outputStream.write(encodedLine.getBytes());
+			outputStream.write(NEW_LINE);
+		} while (!"exit".equals(line));
+	}
+		 </programlisting>
+
+		<para>
+Az Encoder pedig egy interfész, amelynek az encode metódusát a CeasarCoder fájlban deklarálunk
+		</para>
+
+		<programlisting> 
+package com.epam.training.coder.ceasar;
+
+import java.util.function.Function;
+
+import com.epam.training.coder.Decoder;
+import com.epam.training.coder.Encoder;
+
+public class CeasarCoder implements Encoder, Decoder {
+
+	private final int offset;
+
+	public CeasarCoder(int offset) {
+		if (offset &lt; 1 || offset > 127) {
+			throw new IllegalArgumentException("Offset must be between 1 and 127");
+		}
+		this.offset = offset;
+	}
+
+	public CeasarCoder() {
+		this.offset = 1;
+	}
+
+	@Override
+	public String decode(String text) {
+		return buildString(text, character -> (char) ((character - offset) % 128));
+	}
+
+	@Override
+	public String encode(String text) {
+		return buildString(text, character -> (char) ((character + offset) % 128));
+	}
+
+	private String buildString(String text, Function&lt;Character, Character&gt; function) {
+		StringBuilder result = new StringBuilder();
+		for (char character : text.toCharArray()) {
+			if (character != ' ') {
+				result.append(function.apply(character));
+			} else {
+				result.append(character);
+			}
+		}
+		return result.toString();
+	}
+
+}
+		 </programlisting>
+
+		<para>
+A program nem ad meg outputFile-t mint kimeneti lehetőséget, de a következő test megállapítja, hogy a program helyesen működik és sikeresen végzi el a Ceasar titkosítást.
+		</para>
+
+		<programlisting> 
+package caesar.coder.ceasar;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+import caesar.coder.caesarcoder.CeasarCoder;
+
+public class CeasarCoderTest {
+
+	private CeasarCoder underTest = new CeasarCoder(3);
+
+	@Test
+	public void testEncodeShouldWorkCorrectly() {
+		// Given
+		String input = "he told me i could never teach a llama to drive";
+		String expected = "kh wrog ph l frxog qhyhu whdfk d oodpd wr gulyh";
+
+		// When
+		String actual = underTest.encode(input);
+
+		// Then
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testDecodeShouldWorkCorrectly() {
+		// Given
+		String input = "kh wrog ph l frxog qhyhu whdfk d oodpd wr gulyh";
+		String expected = "he told me i could never teach a llama to drive";
+
+		// When
+		String actual = underTest.decode(input);
+
+		// Then
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testConstructorShouldThrowIllegalArgumentExceptionWhenOffsetParameterIsGreaterThen127() {
+		// Given
+		
+		// When
+		assertThrows(IllegalArgumentException.class, () -> new CeasarCoder(128));
+
+		// Then
+	}
+	
+	@Test
+	public void testConstructorShouldThrowIllegalArgumentExceptionWhenOffsetParameterIsLessThen1() {
+		// Given
+		
+		// When
+		assertThrows(IllegalArgumentException.class, () -> new CeasarCoder(0));
+
+		// Then
+	}
+	
+}
+		 </programlisting>
 
 	</section>
 

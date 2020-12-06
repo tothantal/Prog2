@@ -31,8 +31,24 @@ A modellben összesen 6 darab osztály van.
 A diagrammon minden osztály és függvény publikus, és minden változó privát.
 		</para>
 
+		<para>
+A publikusságot "+" jellel, a változók privát létét pedig a "-" jellel jelöltem.
+		</para>
+
+		<para>
+A CurriculumSubject, NonCurriculumSubject és a Subject között általánosítási viszony áll fent, hiszen a kötelező és választható tantárgyak mind a nagyobb területet befogó tantárgy fogalma alá tartoznak.
+		</para>
+
+		<para>
+Az egyik élére állított beszínezett rombusz a kompozíciót jelöli. A kompozíció egy erősebb aggregáció. Hiszen a Subject osztályban van egy Lecturer, Student, illetve egy SubjectType objektum. A Lecturer és Student objektumokból több is van, tömbökbe szedve. A Student osztályban pedig minden tanulónak adunk egy Subject objektumot
+		</para>
+
+		<para>
+A szagattott vonal és nem beszinezett nyíl interfészt/realizációt jelöl. Ez a kapcsolat fennáll a Subject és Student osztályok között mindkét irányban, hiszen a Student deklarálja a addSubject és removeSubject metódusokat, illetve a Subject deklarálja az addNewStudent metódust.
+		</para>
+
 		<para> 
-Ezek közül a legegyszerűbbek a CurriculumSubject és a NonCurriculumSubject publikus osztályok, azaz a kötelező és nem kötelező tárgyak. Mindketten a Subject (tantárgy) alosztályai. 
+Az osztályok közül a legegyszerűbbek a CurriculumSubject és a NonCurriculumSubject publikus osztályok, azaz a kötelező és nem kötelező tárgyak. Mindketten a Subject (tantárgy) alosztályai. 
 		</para>
 
 		<para> 
@@ -40,7 +56,7 @@ Minden tantárgynak van privát kódja, neve, típusa, illetve hozzá tartozó h
 		</para>
 
 		<para> 
-A SubjectType egy külön osztályban van definiálva. Ez egy enum típus ami lehet elméleti, labor vagy gyakorlati. Ez adja a Subject subjectType nevű változójának a typusát.
+A SubjectType egy külön osztályban van definiálva. Ez egy enum típus ami lehet elméleti, labor vagy gyakorlati. Ez adja a Subject subjectType nevű változójának a tipusát.
 		</para>
 
 		<para> 
