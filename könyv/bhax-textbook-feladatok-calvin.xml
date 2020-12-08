@@ -302,7 +302,7 @@ System.out.println(result.getNow("Bye"));
 	</programlisting>
 
 	<para>
-A második sor pedig a következőképpen áll össze: Először elvégződik a shortTask, illetve az azt követő thenApply metódus, ezzel a result értéke "HI WORLD" lesz. Majd a mediumTask elvégzése után az eredmény módosul "Hey, HELLO World"-é a thenCombineAsync() metódussal, és ezt fogja kiíratni nekünk a fenti println, amikor elérhető lesz az eredmény.
+Amikor a következő getNow() metódust használjuk, akkor a result értéke "Hey, HELLO World". 
 	</para>
 
 	<programlisting>
@@ -321,5 +321,9 @@ Az output utolsó soráért pedig a következő sor felel:
 result.whenCompleteAsync((s, throwable) -> 
 	System.out.println("Complete: " +s), executorService);
 	</programlisting>
+
+	<para>
+Amikor befejeződik a program futása, kiíratódik a konzolra a Complete: Hey, HELLO World.
+	</para>
 
 </chapter>
