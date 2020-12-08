@@ -175,10 +175,228 @@ Egy kicsit javítani lehet az alap módszeren azzal, hogy az átnézendő interv
 
     	<section>
     		<title> EPAM: Saját HashMap implementáció </title>
-		<para> feladat leírása </para>
+		<para> Írj egy saját java.util.Map implementációt, mely nem használja a Java Collection API-t.</para>
 
-		<programlisting> FELADAT KÓD </programlisting>
-		<para> feladat megoldása </para>
+		
+
+		<para> 
+Az implementáció meg kell feleljen az összes megadott unit tesztnek, nem kell tudjon kezelni null értékű kulcsokat és a “keySet”, “values”, “entrySet” metódusok nem kell támogassák az elem törlést.
+		 </para>
+
+
+
+
+
+		<para> 
+A map Java-ban egy olyan objektum amely két tömbből áll. Ezek a kulcsok és értékek. Minden kulcshoz hozzárendel egy értéket.  Egy kulcshoz maximum egy érték tartozhat
+		 </para>
+
+		<programlisting> 
+public class ArrayMap&lt;K, V&gt; implements Map&lt;K, V&gt; {
+
+private static final int INITIAL_SIZE = 16;
+
+  private int size = 0;
+  private K[] keys = (K[]) new Object[INITIAL_SIZE];
+private V[] values = (V[]) new Object[INITIAL_SIZE];
+
+// ...
+
+}
+		 </programlisting>
+
+		<para> 
+A map olyan metódusokat tartalmaz, mint a put, get, remove, containsKey, putAll, clear, keySet, entrySet, és a values
+		 </para>
+
+		<para> 
+A size() egy egyszerű metódus, amely visszaadja az ArrayMap méretét.
+		 </para>
+
+		<programlisting> 
+@Override
+  public int size() {
+    return size;
+}
+		 </programlisting>
+
+		<para> 
+Az isEmpty() megmondja, hogy üres-e az objektum, azaz hogy a mérete nagyobb-e nullánál.
+		 </para>
+
+		<programlisting> 
+@Override
+  public boolean isEmpty() {
+    return size &lt;= 0;
+  }
+		 </programlisting>
+
+		<para> 
+A containsKey és a containsValue megmondják, benne van-e a megadott kulcs illetve érték az objektumunkban. Ezt mindkettő a searchItemInArray() függvénnyel teszi, amely visszatéríti, hogy 
+egy megadott érték megtalálható-e egy értékkészletben.
+		 </para>
+
+		<programlisting> 
+@Override
+  public boolean containsValue(Object value) {
+  int valueIndex = searchItemInArray(value, values, Object::equals);
+  return valueIndex > -1 &amp;&amp; keys[valueIndex] != null;
+}
+
+@Override
+  public boolean containsKey(Object key) {
+  Objects.requireNonNull(key, NULL_KEY_NOT_SUPPORTED);
+
+  return searchItemInArray(key, keys, Object::equals) != -1;
+}
+		 </programlisting>
+
+		<para> 
+A  get() metódus végigiterálja az elemeket, amíg meg nem találja a megadott kulcsot. Ha az megvan, akkor visszatéríti a kulcshoz tartozó értéket. Egyébként null értéket ad vissza.
+		 </para>
+
+		<programlisting> 
+@override 
+public V get(Object key) {
+	Objects.requireNonNull(key, NULL_KEY_NOT_SUPPORTED);
+	
+if (size &lt;= 0) {
+	return null;
+}
+int keyIndex = searchItemInArray(key, keys, Object::equals);
+if (keyIndex > -1) {
+	return values[keyIndex];
+}
+return null;
+}
+		 </programlisting>
+
+		<para> 
+A put() betesz a containerünkbe egy adott kulcsú elemet. Ha a kulcs nem szerepel a containerünkben, akkor kibővíti azt. Ehhez hasonlóan a putAll() egyszerre több értéket tesz a Mapunkba.
+		 </para>
+
+		<programlisting> 
+@override
+public V put(K key, V value) {
+	Objects.requireNonNull(key, NULL_KEY_NOT_SUPPORTED);
+
+	int keyIndex = searchItemInArray(key, keys, Objects::equals);
+	if (keyIndex &lt; 0) {
+		keyIndex = findFirstEmptyPlace();
+	if (keyIndex &lt; 0) {
+	expandArrays();
+}
+keyIndex = size;
+}
+V prevValue = values[keyIndex];
+
+keys[keyIndex] = key;
+values[keyIndex] = value;
+size++;
+
+return prevValue
+}
+
+@override void putAll(Map&lt;? extends K, ? extends V&gt; m) {
+	m.forEach(this::put);
+}
+		 </programlisting>
+
+		<para> 
+A remove() eltávolít egy adott kulcsú elemet. Ennek a párja a clear(), amely az összes elemet eltávolítja. 
+		 </para>
+
+		<programlisting> 
+@override
+public V remove(Object key) {
+	Objects.requireNonNull(key, NULL_KEY_NOT_SUPPORTED);
+
+int keyIndex = searchItemInArray(key, keys, Object::equals);
+if (keyIndex > -1) {
+	V prevValue = values[keyIndex];
+
+keys[keyIndex] = null;
+values[keyIndex] = null;
+size--;
+
+return prevValue
+}
+return null;
+}
+
+@override 
+public void clear() {
+	Arrays.fill(keys, null);
+Arrays.fille(values, null);
+size = 0;
+}
+		 </programlisting>
+
+		<para> 
+A keySet() visszatér egy kulcsokat tartalmazó HashSet-tel, míg a values() egy értékeket tartalmazó ArrayList-et ad vissza nekünk.
+		 </para>
+
+		<programlisting> 
+@override
+public Set<K> keySet() {
+	Set<K> result = new HashSet();
+	for(K i : keys) {
+		if(i != null) {
+			result.add(i)
+}
+}
+return result;
+}
+
+@override
+public Collection<V> values() {
+	Collection<V> result = new ArrayList();
+	for(V i : values) {
+		if (i != null) {
+			result.add(i);
+}
+}
+return result;
+}
+
+
+@override
+public Set&lt;Entry&lt;K, V&gt;&gt; entrySet() {
+	Set&lt;Entry&lt;K, V&gt;&gt; result = new HashSet<>();
+	for(int i = 0; i &lt; keys.length; ++i) {
+		K key = keys[i];
+		if (key != 0) {
+			V value = values[i];
+			result.add(new AbstractMap.SimpleEntry<>(key, value));
+		}
+	}
+return result;
+}
+		 </programlisting>
+
+		<para> 
+Végezetül egy pár segítő függvények. a searchItemInArray() megkeres egy adott elemet a egy tömbben, a findFirstEmpty(), megkeresi az első üres elemet. Illetve az expandArrays() megkétszerezi a Map méretét.
+		 </para>
+
+		<programlisting> 
+private <I> int searchItemInArray(I item, I[] array, BiPredicate&lt;I, I&gt; equalFunction) {
+	for (int index = 0; index &lt; array,length; index++) {
+		return index;
+}
+return -1
+}
+
+private int findFirstEmptyPlace() {
+	return searchItemInArray(null, keys, Objects::equals);
+}
+
+private void expandArrays() {
+	int expandSize = size * 2;
+
+keys = Arrays.copyOf(keys, expandedSize);
+values = Arrays.copyOf(values, expandedSize);
+}
+		 </programlisting>
 
 	</section>
 

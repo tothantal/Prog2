@@ -142,6 +142,210 @@ private class BeanDefinition {
 …
 		 </programlisting>
 
+
+	<para>A DiContextBuilder.java forrása: </para>
+
+	<programlisting>
+
+package com.epam.training.di.impl;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+
+import com.epam.training.di.Configuration;
+import com.epam.training.di.DiContext;
+import com.epam.training.di.annotation.Bean;
+import com.epam.training.di.annotation.Qualifier;
+
+public class DiContextBuilder {
+
+	public DiContext build(Configuration contextConfiguration) {
+		DiContext context = new DiContextImpl();
+
+		List&lt;BeanDefinition&gt; beanDefinitions = new LinkedList&lt;BeanDefinition&gt;();
+
+		for (Method method : contextConfiguration.getClass().getMethods()) {
+			if (isAnnotatedWithBean(method)) {
+				List&lt;BeanDefinitionParameter&gt; beanDependencies = new LinkedList&lt;DiContextBuilder.BeanDefinitionParameter&gt;();
+				for (Parameter parameter : method.getParameters()) {
+					String name = null;
+					if (parameter.getAnnotation(Qualifier.class) != null) {
+						name = parameter.getAnnotation(Qualifier.class).name();
+					}
+					beanDependencies.add(new BeanDefinitionParameter&lt;&gt;(name, parameter.getType()));
+				}
+				beanDefinitions
+						.add(new BeanDefinition(method.getName(), method.getReturnType(), method, beanDependencies));
+			}
+		}
+
+		int beanDefinitionsSize = beanDefinitions.size();
+		context.addBean("context", context);
+
+		while (beanDefinitions.size() &gt; 0) {
+			List&lt;BeanDefinition&gt; resolvedBeanDefinitions = new LinkedList&lt;&gt;();
+			for (BeanDefinition beanDefinition : beanDefinitions) {
+				if (isBeanDefinitionResolvable(beanDefinition, context)) {
+					context.addBean(beanDefinition.name, createBean(beanDefinition, context, contextConfiguration));
+					resolvedBeanDefinitions.add(beanDefinition);
+				}
+			}
+			beanDefinitions.removeAll(resolvedBeanDefinitions);
+
+			if (beanDefinitionsSize == beanDefinitions.size()) {
+				throw new IllegalArgumentException("Circular dependency!");
+			} else {
+				beanDefinitionsSize = beanDefinitions.size();
+			}
+		}
+
+		return context;
+	}
+
+	private Object createBean(BeanDefinition beanDefinition, DiContext context, Object contextConfiguration) {
+		List&lt;Object&gt; dependencies = new ArrayList&lt;&gt;(beanDefinition.dependencies.size());
+
+		for (BeanDefinitionParameter parameter : beanDefinition.dependencies) {
+			Optional&lt;Object&gt; dependency;
+			if (parameter.name != null) {
+				dependency = context.getBean(parameter.name, parameter.type);
+			} else {
+				dependency = context.getBean(parameter.type);
+			}
+			dependencies.add(dependency.get());
+		}
+
+		try {
+			return beanDefinition.builderMethod.invoke(contextConfiguration, dependencies.toArray());
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	private boolean isBeanDefinitionResolvable(BeanDefinition beanDefinition, DiContext context) {
+		for (BeanDefinitionParameter parameter : beanDefinition.dependencies) {
+			Optional&lt;Object&gt; dependency;
+			if (parameter.name != null) {
+				dependency = context.getBean(parameter.name, parameter.type);
+			} else {
+				dependency = context.getBean(parameter.type);
+			}
+			if (dependency.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean isAnnotatedWithBean(Method method) {
+		for (Annotation annotation : method.getDeclaredAnnotations()) {
+			if (annotation.annotationType().equals(Bean.class)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private class BeanDefinition {
+		String name;
+		Class type;
+		Method builderMethod;
+		List&lt;BeanDefinitionParameter&gt; dependencies;
+
+		public BeanDefinition(String name, Class type, Method builderMethod,
+				List&lt;BeanDefinitionParameter&gt; dependencies) {
+			super();
+			this.name = name;
+			this.type = type;
+			this.builderMethod = builderMethod;
+			this.dependencies = dependencies;
+		}
+	}
+
+	private class BeanDefinitionParameter&lt;T&gt; {
+		String name;
+		Class&lt;T&gt; type;
+
+		public BeanDefinitionParameter(String name, Class&lt;T&gt; type) {
+			super();
+			this.name = name;
+			this.type = type;
+		}
+	}
+
+}
+
+	</programlisting>
+
+	<para>
+	A DiContectImpl.java forrása:
+	</para>
+
+	<programlisting>
+package com.epam.training.di.impl;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import com.epam.training.di.DiContext;
+
+public class DiContextImpl implements DiContext {
+
+	private Map&lt;String, Object&gt; context = new HashMap<>();
+	private Map&lt;Class&lt;?&gt;, List&lt;Object&gt;&gt; contextMappedByType = new HashMap&lt;&gt;();
+
+	public void addBean(String beanName, Object bean) {
+		if (context.containsKey(beanName)) {
+			throw new IllegalArgumentException("Bean has been already created: " + beanName);
+		}
+		context.put(beanName, bean);
+		if (contextMappedByType.containsKey(bean.getClass())) {
+			contextMappedByType.get(bean.getClass()).add(bean);
+		} else {
+			List&lt;Object&gt; objectList = new LinkedList&lt;&gt;();
+			objectList.add(bean);
+			contextMappedByType.put(bean.getClass(), objectList);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public &lt;T&gt; Optional&lt;T&gt; getBean(String beanName, Class&lt;T&gt; clazz) {
+		Optional&lt;T&gt; ret = null;
+		if (context.containsKey(beanName)) {
+			ret = Optional.of((T) context.get(beanName));
+		} else {
+			ret = Optional.empty();
+		}
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public &lt;T&gt; Optional&lt;T&gt; getBean(Class&lt;T&gt; clazz) {
+		Optional&lt;T&gt; ret = null;
+		List&lt;Object&gt; objestList = contextMappedByType.get(clazz);
+		if (objestList == null) {
+			ret = Optional.empty();
+		} else if (objestList.size() != 1) {
+			throw new IllegalArgumentException("There are multiple bean available for type: " + clazz);
+		} else {
+			ret = Optional.of((T) objestList.get(0));
+		}
+		return ret;
+	}
+
+}
+	</programlisting>
+
 	</section>
 
     	<section>
